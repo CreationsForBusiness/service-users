@@ -10,6 +10,7 @@ coverage/
 
 # Environment
 .env
+migrate.json
 
 # IDE
 .vscode/*

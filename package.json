@@ -10,7 +10,10 @@
   "scripts": {
     "dev": "nodemon src/index.js",
     "lint": "eslint .",
-    "test": "jest"
+    "test": "jest",
+    "migrate": "migrate up --autosync",
+    "migrate:create": "migrate create",
+    "migrate:down": "migrate down"
   },
   "dependencies": {
     "@koa/cors": "^3.1.0",
@@ -18,7 +21,9 @@
     "koa": "^2.13.1",
     "koa-bodyparser": "^4.3.0",
     "koa-morgan": "^1.0.1",
-    "koa-router": "^10.0.0"
+    "koa-router": "^10.0.0",
+    "migrate-mongoose": "^4.0.0",
+    "mongoose": "^5.11.13"
   },
   "devDependencies": {
     "eslint": "^7.18.0",
