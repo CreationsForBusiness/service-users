@@ -7,6 +7,7 @@ const bodyParser = require('koa-bodyparser');
 const { name, version } = require('../package.json');
 
 const router = require('./routes');
+const models = require('./models');
 
 const app = new Koa();
 
@@ -31,6 +32,7 @@ app.use(async (ctx, next) => {
   ctx.app_name = name;
   ctx.version = version;
   ctx.env = app.env;
+  ctx.models = models.mongoose.models;
   next();
 });
 
