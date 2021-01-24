@@ -3,7 +3,9 @@ const { environments } = require('../constants');
 
 const { env, mongo, debug } = environments;
 
-const { host, port, database, user = false, pass = false } = mongo;
+const {
+  host, port, database, user = false, pass = false,
+} = mongo;
 
 class MongoDatabase {
   constructor() {
@@ -23,7 +25,7 @@ class MongoDatabase {
       useUnifiedTopology: true,
       useFindAndModify: false,
     };
-    if(user !== false && pass !== false) {
+    if (user !== false && pass !== false) {
       this.dbOption.auth = { authSource: 'admin' };
       this.dbOption.user = user;
       this.dbOption.pass = pass;

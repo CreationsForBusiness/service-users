@@ -1,9 +1,10 @@
 const mongoose = require('mongoose');
+
 const { Schema } = mongoose;
 
-const { database_fixed_values:defaultValue } = require('../../constants');
+const { database_fixed_values: defaultValue } = require('../../constants');
 
-module.exports  = new Schema({
+module.exports = new Schema({
   ip: {
     type: String,
     required: true,

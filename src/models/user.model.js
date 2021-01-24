@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
+
 const { Schema } = mongoose;
 
-const { database_fixed_values:enums } = require('../constants');
+const { database_fixed_values: enums } = require('../constants');
 
 const Mail = require('./schemas/mail.schema');
 const App = require('./schemas/app.schema');
@@ -34,7 +35,7 @@ const schema = new Schema({
   ip_registered: {
     type: [IP],
     required: true,
-  }
+  },
 });
 
 module.exports = mongoose.model('users', schema);

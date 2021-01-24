@@ -9,5 +9,5 @@ module.exports = {
     user_actions: userActions,
     user_register: userActions[0],
     login_types: ['form', 'google', 'facebook'],
-  }
-}
+  },
+};

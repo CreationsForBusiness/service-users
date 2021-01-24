@@ -10,5 +10,5 @@ module.exports = {
     database: env.MONGO_DATABASE || 'users',
     user: env.MONGO_USER,
     pass: env.MONGO_PASS,
-  }
-}
+  },
+};

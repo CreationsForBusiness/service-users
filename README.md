@@ -19,7 +19,22 @@ Service for manage users by platform.
 `npm install` or `yarn install`
 1. Copy .env.example
 `cp .env.example .env`
+1. Replace environments variable
+   * **PORT**: This port will be used by the app.
+1. Copy migrate.example.json
+`cp migrate.example.json migrate.json`
+1. Replace values for migrations
+   * **dbConnectionUri**: uri conection for databse
+1. Run migrations
+`npm run migrate`
 1. Run project
 `npm run dev` or `yarn run dev`
+
+## Contributing 🏗
+#### Migrations
+For create migrations run: `npm run migrate:create`
+
+For down migrations run: `npm run migrate:down`
+
 ## License
 [MIT](https://choosealicense.com/licenses/mit/)

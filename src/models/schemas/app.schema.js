@@ -1,7 +1,8 @@
 const mongoose = require('mongoose');
+
 const { Schema } = mongoose;
 
-module.exports  = new Schema({
+module.exports = new Schema({
   code: {
     type: String,
     required: true,

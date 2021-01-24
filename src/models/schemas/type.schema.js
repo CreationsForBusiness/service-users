@@ -1,11 +1,12 @@
 const mongoose = require('mongoose');
+
 const { Schema } = mongoose;
 
-const { database_fixed_values:enums } = require('../../constants');
+const { database_fixed_values: enums } = require('../../constants');
 
 const Password = require('./password.schema');
 
-module.exports  = new Schema({
+module.exports = new Schema({
   code: {
     type: String,
     required: true,
