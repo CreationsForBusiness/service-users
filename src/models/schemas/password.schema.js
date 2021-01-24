@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
+const { database_fixed_values:defaultValue } = require('../../constants');
+
 module.exports  = new Schema({
   sha: {
     type: String,
@@ -9,7 +11,7 @@ module.exports  = new Schema({
   code: {
     type: String,
     required: true,
-    default: 'register',
+    default: defaultValue.user_register,
   },
   status: {
     type: Boolean,

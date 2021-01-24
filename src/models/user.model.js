@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
+const { database_fixed_values:enums } = require('../constants');
+
 const Mail = require('./schemas/mail.schema');
 const App = require('./schemas/app.schema');
 const IP = require('./schemas/ip.schema');
@@ -27,7 +29,7 @@ const schema = new Schema({
   state: {
     type: String,
     required: true,
-//    enum: Object.values(TypeBrandEnum)
+    enum: enums.user_state,
   },
   ip_registered: {
     type: [IP],
