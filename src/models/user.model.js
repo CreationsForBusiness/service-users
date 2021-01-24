@@ -5,7 +5,6 @@ const { Schema } = mongoose;
 const { database_fixed_values: enums } = require('../constants');
 
 const Mail = require('./schemas/mail.schema');
-const App = require('./schemas/app.schema');
 const IP = require('./schemas/ip.schema');
 
 const schema = new Schema({
@@ -18,10 +17,7 @@ const schema = new Schema({
     required: true,
     default: [],
   },
-  app: {
-    type: [App],
-    required: true,
-  },
+
   status: {
     type: Boolean,
     required: true,

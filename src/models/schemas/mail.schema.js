@@ -3,14 +3,20 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const Type = require('./type.schema');
+const App = require('./app.schema');
+
 
 module.exports = new Schema({
   mail: {
     type: String,
-    required: false,
+    required: true,
   },
   type: {
     type: [Type],
+    required: true,
+  },
+  app: {
+    type: [App],
     required: true,
   },
   status: {

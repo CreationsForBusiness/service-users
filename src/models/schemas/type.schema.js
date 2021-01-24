@@ -14,8 +14,7 @@ module.exports = new Schema({
   },
   password: {
     type: [Password],
-    required: true,
-    default: [],
+    required: false,
   },
   status: {
     type: Boolean,
