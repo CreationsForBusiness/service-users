@@ -1,0 +1,7 @@
+test/
+coverage/
+node_modules/
+dist/
+docs/
+jest.config.js
+migrations/

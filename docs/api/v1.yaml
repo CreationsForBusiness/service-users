@@ -1,0 +1,201 @@
+openapi: 3.0.0
+info:
+  version: 1
+  title: User Service
+  license:
+    name: MIT License
+    url: https://choosealicense.com/licenses/mit/
+  description: |
+    Rest service for manage user account, register and login.
+
+    ## URI BASE
+    
+    The URI is formated by the host and the version.
+    
+    `{protocol}://{host}/v1`
+
+    ## Data Type
+    
+    The data type used by the API is JSON. 
+    
+    ### Data field allowed:
+     * Integer
+     * Double
+     * String
+     * Array
+     * Object
+     * Date ISO 8601
+    
+    ## HATEOAS
+    
+    Some endpoints migth implement HATEOAS in the body response identified by `*_uri`.
+
+    ## Authorization
+    
+    The authorization method is based in one time generation token which must be sent in the header by the key `app_key`
+
+    ## HTTP Methods
+    
+    | Method | CRUD |
+    | ------------- | ------------- |
+    | HEAD | Head info|
+    | GET  | Read |
+    | POST  | Create  |
+    | PATCH  | Update/Modify  |
+    | PUT  | Update/Replace  |
+    | DELETE  | Delete |
+    
+    ## HTTP CODE
+    | Code | Description |
+    | ------------- | ------------- |
+    | 200 | OK |
+    | 201  | Created |
+    | 400  | Bad Request  |
+    | 401  | Unauthorized4  |
+    | 403  | Forbidden  |
+    | 404  | Not Found |
+    | 408  | Timeout |
+    | 500  | Server Error |
+    | 501  | Not Implemented |
+    | 503  | Service Unavailable |
+
+     
+servers:
+  - url: https://sandbox.users.creations.com/api/v1
+    description: Sandox for testing
+
+paths:
+  /users:
+    get:
+      summary: Get all users
+      tags:
+        - Users
+      responses:
+        "200":
+          description: Users listed
+          content: 
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+    post:
+      summary: Create new user
+      tags:
+        - Users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserForm'
+              
+      responses:
+        "201":
+          description: User Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+  /users/{user_id}:
+    put:
+      summary: Update product
+      tags:
+        - Users
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserId'
+      parameters:
+        - in: path
+          name: user_id
+          schema:
+              $ref: '#/components/schemas/UserId'
+      responses:
+        "400":
+          description: Invalid ID supplied
+        "404":
+          description: User not found
+        "200":  
+          description: User Deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+    delete:
+      summary: Delete user
+      tags:
+        - Users
+      parameters:
+        - in: path
+          name: user_id
+          schema:
+              $ref: '#/components/schemas/UserId'
+     
+      responses:
+        "400":
+          description: Invalid ID supplied
+        "404":
+          description: User not found
+        "200":  
+          description: User Deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+  /session:
+    get:
+      summary: Get session
+      tags:
+        - Session
+        - Users
+    post:
+      summary: Create session
+      tags:
+        - Session
+        - Users
+    patch:
+      summary: Update session
+      tags:
+        - Session
+        - Users
+    delete:
+      summary: Delete session
+      tags:
+        - Session
+        - Users
+components:
+  schemas:
+    UserId:
+      type: string
+      description: Object Id
+      required: true
+    UserIdObject:
+      type: object
+      properties:
+        user_id:
+          $ref: "#/components/schemas/UserId" 
+    UserForm:
+      type: object
+      properties:
+        username:
+          type: string
+          description: User username
+          required: true
+    User:
+      allOf:
+        - $ref: "#/components/schemas/UserIdObject"
+        - $ref: "#/components/schemas/UserForm" 
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+          description: Error code
+        message:
+          type: string
+          description: Error description
+      required:
+        - code
+        - message  
+
