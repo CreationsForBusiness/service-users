@@ -1,3 +1,4 @@
+const { v4 } = require('uuid');
 const Apps = require('../models/app.model');
 const code = 'CFB_001';
 
@@ -5,8 +6,7 @@ const code = 'CFB_001';
  * Make any changes you need to make to the database here
  */
 async function up () {
-  return this('apps').create({ code, name: 'Envelopes', status: true, });
-
+  return this('apps').create({ code, name: 'Envelopes', status: true, uuid: v4() });
 }
 
 /**

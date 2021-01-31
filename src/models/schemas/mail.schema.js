@@ -5,7 +5,6 @@ const { Schema } = mongoose;
 const Type = require('./type.schema');
 const App = require('./app.schema');
 
-
 module.exports = new Schema({
   mail: {
     type: String,

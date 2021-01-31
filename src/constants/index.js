@@ -4,6 +4,7 @@ const userActions = ['register', 'login'];
 
 module.exports = {
   environments,
+  uuid_version: 4,
   database_fixed_values: {
     user_state: ['active', 'blocked', 'suspended'],
     user_actions: userActions,
