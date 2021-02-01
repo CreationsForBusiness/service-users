@@ -4,7 +4,7 @@ const { Schema } = mongoose;
 
 const { database_fixed_values: defaultValue } = require('../../constants');
 
-module.exports = new Schema({
+const schema = new Schema({
   ip: {
     type: String,
     required: true,
@@ -30,3 +30,7 @@ module.exports = new Schema({
     default: Date.now,
   },
 });
+
+schema.statics.ipFormat = (ip, type) => ({ ip, type });
+
+module.exports = schema;

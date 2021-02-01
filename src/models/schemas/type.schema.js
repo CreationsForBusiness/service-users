@@ -6,7 +6,7 @@ const { database_fixed_values: enums } = require('../../constants');
 
 const Password = require('./password.schema');
 
-module.exports = new Schema({
+const schema = new Schema({
   code: {
     type: String,
     required: true,
@@ -19,7 +19,7 @@ module.exports = new Schema({
   status: {
     type: Boolean,
     required: true,
-    default: false,
+    default: true,
   },
   created: {
     type: Date,
@@ -32,3 +32,10 @@ module.exports = new Schema({
     default: Date.now,
   },
 });
+
+schema.statics.typeFormat = (code, sha) => ({
+  code,
+  password: [Password.statics.passwordFormat(sha)],
+});
+
+module.exports = schema;

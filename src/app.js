@@ -44,23 +44,36 @@ app.use(async (ctx, next) => {
 app.use(async (ctx, next) => {
   try {
     await next();
-    if (ctx.status === 404) {
-      ctx.throw(404);
-    }
   } catch (err) {
-    ctx.status = ctx.status || err.statusCode || err.status || 500;
-    ctx.code = ctx.code || 'UK01';
+    // will only respond with JSON
+    ctx.status = err.statusCode || err.status || 500;
     ctx.body = {
       code: ctx.code,
       message: err.message,
     };
-    ctx.app.emit('error', err, ctx);
   }
 });
-
+app.use(middlewares.validator);
 app.use(middlewares.auth);
-
 app.use(router.routes());
+
+// app.use(async (ctx, next) => {
+//   try {
+//     console.log("DEFAULT HANDLER")
+//     await next();
+//     if (ctx.status === 404) {
+//       ctx.throw(404);
+//     }
+//   } catch (err) {
+//     ctx.status = ctx.status || err.statusCode || err.status || 500;
+//     ctx.code = ctx.code || 'UK01';
+//     ctx.body = {
+//       code: ctx.code,
+//       message: err.message,
+//     };
+//     ctx.app.emit('error', err, ctx);
+//   }
+// });
 
 // app.on('error', (err, ctx) => {
 //   // log error

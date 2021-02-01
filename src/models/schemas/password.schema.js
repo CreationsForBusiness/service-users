@@ -2,9 +2,11 @@ const mongoose = require('mongoose');
 
 const { Schema } = mongoose;
 
+const { getRandomString } = require('../../libs/commons.lib');
+
 const { database_fixed_values: defaultValue } = require('../../constants');
 
-module.exports = new Schema({
+const schema = new Schema({
   sha: {
     type: String,
     required: true,
@@ -12,12 +14,16 @@ module.exports = new Schema({
   code: {
     type: String,
     required: true,
+  },
+  type: {
+    type: String,
+    required: true,
     default: defaultValue.user_register,
   },
   status: {
     type: Boolean,
     required: true,
-    default: false,
+    default: true,
   },
   created: {
     type: Date,
@@ -29,5 +35,11 @@ module.exports = new Schema({
     require: true,
     default: Date.now,
   },
-
 });
+
+schema.statics.passwordFormat = (sha, type) => {
+  const code = getRandomString();
+  return { sha, type, code };
+};
+
+module.exports = schema;

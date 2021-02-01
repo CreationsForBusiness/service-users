@@ -1,12 +1,10 @@
 const mongoose = require('mongoose');
 
-const { validate: uuidValidate, version: uuidGetVersion } = require('uuid');
-
-const { uuid_version: uuidVersion } = require('../constants');
+const { validateRandomString } = require('../libs/commons.lib');
 
 const { Schema } = mongoose;
 
-const errorCode = 'AUTH';
+const errorCode = 'MDAP';
 
 const schema = new Schema({
   code: {
@@ -33,10 +31,10 @@ const schema = new Schema({
 
 schema.statics.validateApp = function validateApp(code, uuid) {
   try {
-    if (uuidValidate(uuid) && uuidGetVersion(uuid) === uuidVersion) {
-      return this.countDocuments({ code, uuid })
+    if (validateRandomString(uuid)) {
+      return this.exists({ code, uuid })
         .then((app) => {
-          if (app === 0) {
+          if (!app) {
             throw new Error('The app-code and app-id are invalid');
           }
           return { valid: true };

@@ -5,9 +5,9 @@ const { Schema } = mongoose;
 const Type = require('./type.schema');
 const App = require('./app.schema');
 
-module.exports = new Schema({
+const schema = new Schema({
   mail: {
-    type: String,
+    type: [String],
     required: true,
   },
   type: {
@@ -21,7 +21,7 @@ module.exports = new Schema({
   status: {
     type: Boolean,
     required: true,
-    default: false,
+    default: true,
   },
   created: {
     type: Date,
@@ -34,3 +34,15 @@ module.exports = new Schema({
     default: Date.now,
   },
 });
+
+schema.statics.infoFormat = (mail, type, hash, app) => ({
+  mail: [mail],
+  type: Type.statics.typeFormat(type, hash),
+  app: App.statics.appFormat(app),
+});
+
+schema.statics.typeFormat = (type, hash) => Type.statics.typeFormat(type, hash);
+
+schema.statics.appFormat = (app) => App.statics.appFormat(app);
+
+module.exports = schema;

@@ -7,9 +7,9 @@ module.exports = async (ctx, next) => {
     valid, errorID, errorCode, message,
   } = await apps.validateApp(appCode, appId);
   if (!valid) {
-    ctx.status = 403;
     ctx.code = `${errorCode}-${errorID}`;
-    throw new Error(message);
+    ctx.throw(403, message);
   }
-  next();
+  ctx.app_code = appCode;
+  await next();
 };
