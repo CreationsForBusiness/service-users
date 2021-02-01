@@ -133,9 +133,9 @@ components:
           type: string
           description: Ip of register
           required: true
-        password:
+        hash:
           type: string
-          description: Password encrypted. Only valid for 
+          description: Password encrypted or id_hash from google/facebook 
           required: false
     UserObject:
       type: object
