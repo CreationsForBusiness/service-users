@@ -18,7 +18,19 @@ router.post('/signup', async (ctx) => {
     ctx.throw(400, 'Login type is invalid');
   }
   const signup = await users.signup(email, username, type, ip, hash, appCode);
-
+  if (
+    !Object.prototype.hasOwnProperty.call(signup, 'username')
+    && Object.prototype.hasOwnProperty.call(signup, 'message')
+  ) {
+    ctx.code = `${errorCode}-2`;
+    ctx.throw(403, signup.message);
+  } else if (
+    Object.prototype.hasOwnProperty.call(signup, 'username')
+    && Object.prototype.hasOwnProperty.call(signup, 'message')
+  ) {
+    ctx.code = `${errorCode}-3`;
+    ctx.throw(400, signup.message);
+  }
   ctx.body = signup;
 });
 

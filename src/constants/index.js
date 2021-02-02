@@ -4,6 +4,7 @@ const validator = require('./body_validator');
 
 const userActions = ['register', 'login'];
 const userStates = ['active', 'blocked', 'suspended'];
+const passwordStates = ['active', 'waiting'];
 
 module.exports = {
   environments,
@@ -13,6 +14,8 @@ module.exports = {
     user_actions: userActions,
     user_register: userActions[0],
     login_types: login,
+    password_state: passwordStates,
+    password_state_default: passwordStates[0],
   },
   validator,
   max_username: 15,

@@ -35,14 +35,23 @@ const schema = new Schema({
   },
 });
 
-schema.statics.infoFormat = (mail, type, hash, app) => ({
-  mail: [mail],
-  type: Type.statics.typeFormat(type, hash),
-  app: App.statics.appFormat(app),
-});
-
-schema.statics.typeFormat = (type, hash) => Type.statics.typeFormat(type, hash);
+schema.statics.infoFormat = function infoFormat(mail, type, hash, app, username) {
+  return {
+    mail: [mail],
+    type: this.typeFormat(type, hash, username),
+    app: this.appFormat(app),
+  };
+};
+schema.statics.typeFormat = (type, hash, username) => (
+  Type.statics.typeFormat(type, hash, username)
+);
 
 schema.statics.appFormat = (app) => App.statics.appFormat(app);
+
+schema.statics.validatePassword = (username, type, hash) => (
+  Type.statics.validatePassword(username, type, hash)
+);
+
+schema.statics.isPasswordActive = (types, type) => Type.statics.isPasswordActive(types, type);
 
 module.exports = schema;
