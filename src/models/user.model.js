@@ -180,17 +180,25 @@ schema.statics.getUser = function getUser(username, hasType = false, addType = f
 
 schema.statics.userObject = function userObject(user, type) {
   const {
-    username, accessToken = null, message = null,
+    username, accessToken = null, message = null, addType, hasType
   } = user;
   const currentType = this.getType(user, type);
   const isActive = Info.statics.isPasswordActive(currentType, type);
   const data = { username };
+  let state = 201;
+
   if (isActive && !!accessToken) {
     data.token = accessToken;
   }
   if (message) {
     data.message = message;
   }
+  if(!!hasType && !!!addType) {
+    state = 200;
+  } else if(!!!hasType && !!addType) {
+    state = 202
+  }
+  data.state = state;
   return data;
 };
 
