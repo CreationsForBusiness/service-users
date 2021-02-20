@@ -6,6 +6,8 @@ const bodyParser = require('koa-bodyparser');
 
 const { name, version } = require('../package.json');
 
+const { environments } = require('./constants');
+
 const router = require('./routes');
 const models = require('./models');
 const middlewares = require('./middlewares');
@@ -50,6 +52,7 @@ app.use(async (ctx, next) => {
     ctx.body = {
       code: ctx.code,
       message: err.message,
+      description: !!environments.debug ? err.stack :  null
     };
   }
 });

@@ -3,6 +3,9 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const { getRandomNumber } = require('../libs/commons.lib');
+
+const jwt = require('../libs/token.lib');
+
 const {
   database_fixed_values: enums,
   max_username: longUsername,
@@ -85,7 +88,9 @@ schema.statics.setAddType = function setAddType(user, value = true) {
 };
 
 schema.statics.setAccessToken = function setAccessToken(user, generate = true) {
-  const token = generate ? 'abc' : null;
+  const { status, state, username } = user;
+  const info = { status, state, username };
+  const token = generate ? jwt.generate(info) : null;
   return this.setVal(user, 'accessToken', token);
 };
 
@@ -158,7 +163,9 @@ schema.statics.createUserOnApp = function createUserOnApp(email, username, type,
     .then((user) => {
       if (!user.AddType && user.hasType && !user.accessToken && type === password) {
         return this.setMessage(user, 'User already exist');
-      } if (user.addType && type === password) {
+      } if (!user.AddType && user.hasType && !user.accessToken) {
+        return this.setMessage(user, 'User cannot validate login type with data received');
+      }if (user.addType && type === password) {
         return this.setAccessToken(user, false);
       }
       return user;
