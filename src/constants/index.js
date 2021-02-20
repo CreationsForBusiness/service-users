@@ -18,5 +18,5 @@ module.exports = {
     password_state_default: passwordStates[0],
   },
   validator,
-  max_username: 15,
+  max_username: 32,
 };

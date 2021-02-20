@@ -6,13 +6,14 @@ const router = new Router();
 
 const errorCode = 'RAUT';
 
-router.post('/signup', async (ctx) => {
+router.post('/', async (ctx) => {
   const { request, models, app_code: appCode } = ctx;
   const { users } = models;
   const { body } = request;
   const {
-    email, username, type, ip, hash,
+    email, username, type, hash,
   } = body;
+  const ip = ctx.get('request-ip');
   if (!Object.values(enums.login_types).includes(type)) {
     ctx.code = `${errorCode}-1`;
     ctx.throw(400, 'Login type is invalid');

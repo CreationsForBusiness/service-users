@@ -13,6 +13,6 @@ module.exports = {
   },
   jwt: {
     secret: env.JWT_SECRET || 'abc',
-    expiresIn: parseInt(env.JWT_EXPIRES, 10) || 60,  //minutes
-  } 
+    expiresIn: parseInt(env.JWT_EXPIRES, 10) || 60, // minutes
+  },
 };

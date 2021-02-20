@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const { Schema } = mongoose;
 
-const { getRandomNumber } = require('../libs/commons.lib');
+const { getRandomNumber, getRandomString } = require('../libs/commons.lib');
 
 const jwt = require('../libs/token.lib');
 
@@ -50,17 +50,16 @@ schema.statics.getEmail = function getEmail(email) {
   return this.findOne({ 'info.mail': email });
 };
 
-schema.statics.getUsername = function getUsername(username, original, attempt = 0) {
+schema.statics.getUsername = function getUsername(usernameSuggested, type, original, attempt = 0) {
+  const username = type === password ? usernameSuggested : getRandomString().replace(/[-+()\s]/g, '');
   const first = original ? username : original;
-  if (username.length > longUsername) {
-    return attempt > 10
-      ? Promise.reject(new Error('Username cant be generated'))
-      : this.getUsername(this.nextUsername(username), first, attempt + 1);
+  if (username.length > longUsername && attempt >= 10) {
+    return Promise.reject(new Error('Username cant be generated'));
   }
   return this.exists({ username })
     .then((exist) => (!exist
       ? username
-      : this.getUsername(this.nextUsername(username), first, attempt + 1)));
+      : this.getUsername(this.nextUsername(username), type, first, attempt + 1)));
 };
 
 schema.statics.hasApp = ({ info = [] }, app) => !!info.app.find(({ code }) => code === app);
@@ -165,7 +164,7 @@ schema.statics.createUserOnApp = function createUserOnApp(email, username, type,
         return this.setMessage(user, 'User already exist');
       } if (!user.AddType && user.hasType && !user.accessToken) {
         return this.setMessage(user, 'User cannot validate login type with data received');
-      }if (user.addType && type === password) {
+      } if (user.addType && type === password) {
         return this.setAccessToken(user, false);
       }
       return user;
@@ -175,7 +174,7 @@ schema.statics.createUserOnApp = function createUserOnApp(email, username, type,
 
 schema.statics.signup = function signup(email, username, type, ip, hash, app) {
   return this.getEmail(email)
-    .then((user) => (user ? user.username : this.getUsername(username)))
+    .then((user) => (user ? user.username : this.getUsername(username, type)))
     .then((user) => this.createUserOnApp(email, user, type, ip, hash, app));
 };
 
@@ -187,7 +186,7 @@ schema.statics.getUser = function getUser(username, hasType = false, addType = f
 
 schema.statics.userObject = function userObject(user, type) {
   const {
-    username, accessToken = null, message = null, addType, hasType
+    username, accessToken = null, message = null, addType, hasType,
   } = user;
   const currentType = this.getType(user, type);
   const isActive = Info.statics.isPasswordActive(currentType, type);
@@ -200,10 +199,10 @@ schema.statics.userObject = function userObject(user, type) {
   if (message) {
     data.message = message;
   }
-  if(!!hasType && !!!addType) {
+  if (!!hasType && !addType) {
     state = 200;
-  } else if(!!!hasType && !!addType) {
-    state = 202
+  } else if (!hasType && !!addType) {
+    state = 202;
   }
   data.state = state;
   return data;

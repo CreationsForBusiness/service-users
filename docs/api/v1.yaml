@@ -68,7 +68,7 @@ servers:
     
 
 paths:
-  /auth/signup:
+  /auth:
     post:
       summary: Create a account
       tags:
@@ -76,6 +76,7 @@ paths:
       parameters:
         - $ref: '#/components/schemas/HeaderAppCode'
         - $ref: '#/components/schemas/HeaderAppId'
+        - $ref: '#/components/schemas/HeaderIpRequest'
       requestBody:
         content:
           application/json:
@@ -111,13 +112,58 @@ paths:
           content: 
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'      
+                $ref: '#/components/schemas/Error'
+    get:
+      summary: Create a account
+      tags:
+        - Auth
+      parameters:
+        - $ref: '#/components/schemas/HeaderAppCode'
+        - $ref: '#/components/schemas/HeaderAppId'
+        - $ref: '#/components/schemas/HeaderIpRequest'
+      responses:
+        "202":
+          description: New method of login registered
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Login'
+        "201":
+          description: User created
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Login'
+        "200":
+          description: User already has account
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Login'
+        "400":
+          description: Error on data
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "403":
+          description: Error on singup
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         
 
 
 
 components:
   schemas:
+    HeaderIpRequest:
+      in: header
+      name: request-ip
+      description: Ip from request
+      type: string
+      required: true
     HeaderAppCode:
       in: header
       name: app-code
@@ -154,14 +200,15 @@ components:
           type: string
           description: Type of signup
           required: true
-        ip:
-          type: string
-          description: Ip of register
-          required: true
         hash:
           type: string
           description: Password encrypted or id_hash from google/facebook 
+          required: true
+        is_register:
+          type: boolean
+          description: It is true if is a register and false if is login
           required: false
+        
     UserObject:
       type: object
       properties:

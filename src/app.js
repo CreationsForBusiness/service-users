@@ -52,7 +52,7 @@ app.use(async (ctx, next) => {
     ctx.body = {
       code: ctx.code,
       message: err.message,
-      description: !!environments.debug ? err.stack :  null
+      description: environments.debug ? err.stack : null,
     };
   }
 });
