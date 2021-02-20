@@ -113,7 +113,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-    get:
+  /auth/signin:
+    post:
       summary: Create a account
       tags:
         - Auth
@@ -121,6 +122,11 @@ paths:
         - $ref: '#/components/schemas/HeaderAppCode'
         - $ref: '#/components/schemas/HeaderAppId'
         - $ref: '#/components/schemas/HeaderIpRequest'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserLogin'
       responses:
         "202":
           description: New method of login registered
@@ -185,17 +191,30 @@ components:
       properties:
         user_id:
           $ref: "#/components/schemas/UserId" 
-    UserForm:
+    UserEmail:
       type: object
       properties:
         email: 
           type: string
           description: User email
-          required: true,
+          required: true
+    UserUsername:
+      type: object
+      properties:
         username:
           type: string
-          description: User username
+          description: User username (Not required for Facebook nor Google)
+          required: false
+    UserIndetifier:
+      type: object
+      properties:
+        identifier:
+          type: string
+          description: Username or Email of user
           required: true
+    UserBase:
+      type: object
+      properties:
         type: 
           type: string
           description: Type of signup
@@ -204,11 +223,17 @@ components:
           type: string
           description: Password encrypted or id_hash from google/facebook 
           required: true
-        is_register:
-          type: boolean
-          description: It is true if is a register and false if is login
-          required: false
-        
+    UserForm:
+      allOf:
+        - $ref: "#/components/schemas/UserEmail" 
+        - $ref: "#/components/schemas/UserUsername" 
+        - $ref: "#/components/schemas/UserBase"
+
+    UserLogin:
+      allOf:
+        - $ref: "#/components/schemas/UserIndetifier" 
+        - $ref: "#/components/schemas/UserBase"
+    
     UserObject:
       type: object
       properties:

@@ -1,7 +1,7 @@
 module.exports = {
-  '/api/v1/auth/signup': {
+  '/api/v1/auth': {
     $schema: 'http://json-schema.org/draft-07/schema',
-    $id: 'User',
+    $id: 'SignUp',
     type: 'object',
     title: 'User fields',
     description: 'User fields for signup',
@@ -9,9 +9,22 @@ module.exports = {
       email: { type: 'string', format: 'email' },
       username: { type: 'string', format: 'username' },
       type: { type: 'string' },
-      ip: { type: 'string', format: 'ip' },
       hash: { type: 'string' },
     },
-    required: ['email', 'username', 'type', 'ip', 'hash'],
+    required: ['email', 'type', 'hash'],
   },
+  '/api/v1/auth/signin': {
+    $schema: 'http://json-schema.org/draft-07/schema',
+    $id: 'SignIn',
+    type: 'object',
+    title: 'Signin Form',
+    description: 'User fields for signin',
+    properties: {
+      identifier: { type: 'string' },
+      type: { type: 'string' },
+      hash: { type: 'string' },
+    },
+    required: ['identifier', 'type', 'hash'],
+
+  }
 };

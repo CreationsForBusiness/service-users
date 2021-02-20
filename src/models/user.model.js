@@ -51,7 +51,7 @@ schema.statics.getEmail = function getEmail(email) {
 };
 
 schema.statics.getUsername = function getUsername(usernameSuggested, type, original, attempt = 0) {
-  const username = type === password ? usernameSuggested : getRandomString().replace(/[-+()\s]/g, '');
+  const username = type === password ? usernameSuggested : getRandomString().replace(/[-+()\s1-9]/g, '');
   const first = original ? username : original;
   if (username.length > longUsername && attempt >= 10) {
     return Promise.reject(new Error('Username cant be generated'));
@@ -87,8 +87,8 @@ schema.statics.setAddType = function setAddType(user, value = true) {
 };
 
 schema.statics.setAccessToken = function setAccessToken(user, generate = true) {
-  const { status, state, username } = user;
-  const info = { status, state, username };
+  const { state, username } = user;
+  const info = { state, username };
   const token = generate ? jwt.generate(info) : null;
   return this.setVal(user, 'accessToken', token);
 };
@@ -185,6 +185,7 @@ schema.statics.getUser = function getUser(username, hasType = false, addType = f
 };
 
 schema.statics.userObject = function userObject(user, type) {
+  console.log(user)
   const {
     username, accessToken = null, message = null, addType, hasType,
   } = user;
@@ -195,6 +196,8 @@ schema.statics.userObject = function userObject(user, type) {
 
   if (isActive && !!accessToken) {
     data.token = accessToken;
+  } else if(isActive && message !== null) {
+    data.message = `Invalid Password`
   }
   if (message) {
     data.message = message;
@@ -207,5 +210,16 @@ schema.statics.userObject = function userObject(user, type) {
   data.state = state;
   return data;
 };
+
+schema.statics.signin = function signin(identifier, type, hash, ip) {
+  return this.findOne({ status: true, $or: [{ username: identifier }, { 'info.mail': identifier } ]})
+    .then(user => {
+      if(!!user) {
+        return this.validatePassword(user, type, hash);
+      }
+      return this.setMessage({},  'User does not exist');
+    })
+    .then((user) => this.userObject(user, type))
+}
 
 module.exports = mongoose.model('users', schema);

@@ -13,6 +13,7 @@ module.exports = async (ctx, next) => {
   const { originalUrl, request } = ctx;
   const { body } = request;
   const { [originalUrl]: schema = {} } = schemas;
+  console.log(originalUrl)
   const validate = validator.compile(schema);
   const valid = validate(body, schema);
   if (!valid) {
