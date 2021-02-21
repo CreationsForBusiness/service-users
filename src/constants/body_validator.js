@@ -1,5 +1,5 @@
 module.exports = {
-  '/api/v1/auth': {
+  '/api/v1/auth_POST': {
     $schema: 'http://json-schema.org/draft-07/schema',
     $id: 'SignUp',
     type: 'object',
@@ -13,7 +13,7 @@ module.exports = {
     },
     required: ['email', 'type', 'hash'],
   },
-  '/api/v1/auth/signin': {
+  '/api/v1/auth/session_POST': {
     $schema: 'http://json-schema.org/draft-07/schema',
     $id: 'SignIn',
     type: 'object',
@@ -26,5 +26,5 @@ module.exports = {
     },
     required: ['identifier', 'type', 'hash'],
 
-  }
+  },
 };

@@ -113,9 +113,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-  /auth/signin:
+  /auth/session:
     post:
-      summary: Create a account
+      summary: Create a session
       tags:
         - Auth
       parameters:
@@ -128,20 +128,14 @@ paths:
             schema:
               $ref: '#/components/schemas/UserLogin'
       responses:
-        "202":
-          description: New method of login registered
-          content: 
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Login'
         "201":
-          description: User created
+          description: Session created
           content: 
             application/json:
               schema:
                 $ref: '#/components/schemas/Login'
         "200":
-          description: User already has account
+          description: Session returned
           content: 
             application/json:
               schema:
@@ -153,11 +147,40 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
         "403":
-          description: Error on singup
+          description: Error on signin
           content: 
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+    get:
+      summary: Get info session
+      tags:
+        - Auth
+      parameters:
+        - $ref: '#/components/schemas/HeaderAppCode'
+        - $ref: '#/components/schemas/HeaderAppId'
+        - $ref: '#/components/schemas/HeaderIpRequest'
+        - $ref: '#/components/schemas/HeaderToken'
+      responses:
+        "200":
+          description: Session returned
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Login'
+        "400":
+          description: Error on data
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "403":
+          description: Error on signin
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+         
         
 
 
@@ -181,6 +204,12 @@ components:
       name: app-id
       type: string
       format: uuid
+      required: true
+    HeaderToken:
+      in: header
+      name: token
+      description: Token of login
+      type: string
       required: true
     UserId:
       type: string

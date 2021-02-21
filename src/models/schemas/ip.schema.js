@@ -17,7 +17,7 @@ const schema = new Schema({
   status: {
     type: Boolean,
     required: true,
-    default: false,
+    default: true,
   },
   created: {
     type: Date,
@@ -31,6 +31,6 @@ const schema = new Schema({
   },
 });
 
-schema.statics.ipFormat = (ip, type) => ({ ip, type });
+schema.statics.ipFormat = (ip, status = true) => ({ ip, status });
 
 module.exports = schema;

@@ -11,9 +11,10 @@ validator.addFormat('username', { validate: (input) => validateFormat(/^[A-Za-z]
 
 module.exports = async (ctx, next) => {
   const { originalUrl, request } = ctx;
+  const { method } = request;
   const { body } = request;
-  const { [originalUrl]: schema = {} } = schemas;
-  console.log(originalUrl)
+  const schemaName = `${originalUrl}_${method}`;
+  const { [schemaName]: schema = {} } = schemas;
   const validate = validator.compile(schema);
   const valid = validate(body, schema);
   if (!valid) {

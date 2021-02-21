@@ -23,7 +23,8 @@ class Token {
 
   verify(token) {
     try {
-      return jwt.verify(token, this.token);
+      const data = jwt.verify(token, this.token);
+      return { valid: true, data };
     } catch (err) {
       return { valid: false, err };
     }

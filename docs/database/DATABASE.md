@@ -30,6 +30,16 @@
 | ip | String | yes | Ip source of action |
 | date | Date | yes | Date of action |
 
+### Tokens
+| Field | Type | Required | Description |
+| ----- | ---- | -------- | ----------- |
+| code | String| yes | Code of token |
+| state | String | yes | State of token |
+| ip | Object | yes | Ip of token |
+| status | Boolean | yes | Active or inactive |
+| date | Date | yes | Date of creation |
+
+
 ## Schemas
 
 ### Info
