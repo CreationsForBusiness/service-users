@@ -12,7 +12,7 @@ class MongoDatabase {
     this.env = env;
     this.mongoose = mongoose;
     this.db = database;
-    this.port = !!port ? `:${port}` : '';
+    this.port = !!port && Number.isInteger(port) ? `:${port}` : '';
     this.dbURI = `${prefix}://${host}${this.port}/${this.db}`;
     this.reconnectInterval = 1500;
     this.mongoose.set('debug', debug);
