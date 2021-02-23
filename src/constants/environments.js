@@ -3,7 +3,7 @@ const { env } = process;
 module.exports = {
   debug: env.DEBUG === 'true',
   env: env.NODE_ENV,
-  port: env.PORT || 5000,
+  port: env.PORT || 3000,
   mongo: {
     host: env.MONGO_HOST || 'localhost',
     port: env.MONGO_PORT || '27017',
