@@ -1,5 +1,5 @@
-const Apps = require('./src/models/app.model');
-const { getRandomString } = require('./src/libs/commons.lib');
+const Apps = require('../src/models/app.model');
+const { getRandomString } = require('../src/libs/commons.lib');
 const code = 'CFB_001';
 
 /**
