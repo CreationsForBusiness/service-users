@@ -1,4 +1,0 @@
-{
-  "dbConnectionUri": "mongodb://localhost:27017/users",
-  "migrations-dir": "./migrations"
-}

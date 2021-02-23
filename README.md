@@ -15,20 +15,18 @@ Service for manage users by platform.
 
 1. Clone the project
 `git clone git@github.com:CreationsForBusiness/Users.git`
-1. Install dependencies
-`npm install` or `yarn install`
 1. Copy .env.example
 `cp .env.example .env`
 1. Replace environments variable
    * **PORT**: This port will be used by the app.
-1. Copy migrate.example.json
-`cp migrate.example.json migrate.json`
-1. Replace values for migrations
-   * **dbConnectionUri**: uri conection for databse
+1. Install dependencies
+`npm install` or `yarn install`
 1. Run migrations
-`npm run migrate`
+`npm run migrate` or `yarn migrate`
 1. Run project
 `npm run dev` or `yarn run dev`
+
+* Migration will execute before start script.
 
 ## Contributing 🏗
 #### Migrations

@@ -9,7 +9,8 @@
   },
   "scripts": {
     "dev": "nodemon --trace-warnings src/index.js",
-    "start": "node src/index",
+    "prestart": "yarn migrate",
+    "start": " node src/index",
     "lint": "eslint .",
     "test": "jest",
     "migrate": "migrate up --autosync",
