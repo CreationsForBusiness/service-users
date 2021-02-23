@@ -48,12 +48,15 @@ app.use(async (ctx, next) => {
     await next();
   } catch (err) {
     // will only respond with JSON
-    ctx.status = err.statusCode || err.status || 500;
-    ctx.body = {
+    const response = {
       code: ctx.code,
       message: err.message,
-      description: environments.debug ? err.stack : null,
-    };
+    }
+    if(environments.debug) {
+      response.description = err.stack;
+    }
+    ctx.status = err.statusCode || err.status || 500;
+    ctx.body = response
   }
 });
 app.use(middlewares.validator);
