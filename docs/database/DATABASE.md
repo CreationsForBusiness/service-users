@@ -7,7 +7,7 @@
 | Field | Type | Required | Description |
 | ----- | ---- | -------- | ----------- |
 | username | String | yes | username of user |
-| mail | Array[Mail] | yes | Array of emails registered by user |
+| info | Info | yes | Array of emails registered by user |
 | status | Boolean | yes | Status of user |
 | state  | String | yes | state of account |
 | ip_registered | Array[IP] | yes | Ip registered by user |
@@ -30,14 +30,24 @@
 | ip | String | yes | Ip source of action |
 | date | Date | yes | Date of action |
 
+### Tokens
+| Field | Type | Required | Description |
+| ----- | ---- | -------- | ----------- |
+| code | String| yes | Code of token |
+| state | String | yes | State of token |
+| ip | Object | yes | Ip of token |
+| status | Boolean | yes | Active or inactive |
+| date | Date | yes | Date of creation |
+
+
 ## Schemas
 
-### Mail
+### Info
 
 
 | Field | Type | Required | Description |
 | ----- | ---- | -------- | ----------- |
-| mail | String | yes | email address of user  |
+| mail | Array[String] | yes | email address of user  |
 | type | Array[Type] | yes | Type of register |
 | app | Array [App]  | yes | App registered by email |
 | status | Boolean | yes | Status of email  |
@@ -80,6 +90,7 @@
 | ----- | ---- | -------- | ----------- |
 | sha | String | yes | Password encrypted of user |
 | code | String | yes | Code of creation of this password  |
+| type | String | yes | Type for creation of password |
 | status | Boolean | yes | status of this Password |
 | created | Date | yes | Date of creation |
 | updated | Date | yes | Date of update status |

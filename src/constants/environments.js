@@ -11,4 +11,8 @@ module.exports = {
     user: env.MONGO_USER,
     pass: env.MONGO_PASS,
   },
+  jwt: {
+    secret: env.JWT_SECRET || 'abc',
+    expiresIn: parseInt(env.JWT_EXPIRES, 10) || 60, // minutes
+  },
 };

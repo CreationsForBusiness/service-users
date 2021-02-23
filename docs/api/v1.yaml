@@ -12,7 +12,7 @@ info:
     
     The URI is formated by the host and the version.
     
-    `{protocol}://{host}/v1`
+    `{protocol}://{host}/api/v1`
 
     ## Data Type
     
@@ -61,111 +61,156 @@ info:
 
      
 servers:
+  - url: http://localhost:5000/api/v1
+    description: Local for testing
   - url: https://sandbox.users.creations.com/api/v1
     description: Sandox for testing
+    
 
 paths:
-  /users:
-    get:
-      summary: Get all users
-      tags:
-        - Users
-      responses:
-        "200":
-          description: Users listed
-          content: 
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/User'
+  /auth:
     post:
-      summary: Create new user
+      summary: Create a account
       tags:
-        - Users
+        - Auth
+      parameters:
+        - $ref: '#/components/schemas/HeaderAppCode'
+        - $ref: '#/components/schemas/HeaderAppId'
+        - $ref: '#/components/schemas/HeaderIpRequest'
       requestBody:
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/UserForm'
-              
       responses:
-        "201":
-          description: User Created
-          content:
+        "202":
+          description: New method of login registered
+          content: 
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
-  /users/{user_id}:
-    put:
-      summary: Update product
+                $ref: '#/components/schemas/Login'
+        "201":
+          description: User created
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Login'
+        "200":
+          description: User already has account
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Login'
+        "400":
+          description: Error on data
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "403":
+          description: Error on singup
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /auth/session:
+    post:
+      summary: Create a session
       tags:
-        - Users
+        - Auth
+      parameters:
+        - $ref: '#/components/schemas/HeaderAppCode'
+        - $ref: '#/components/schemas/HeaderAppId'
+        - $ref: '#/components/schemas/HeaderIpRequest'
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserId'
-      parameters:
-        - in: path
-          name: user_id
-          schema:
-              $ref: '#/components/schemas/UserId'
+              $ref: '#/components/schemas/UserLogin'
       responses:
-        "400":
-          description: Invalid ID supplied
-        "404":
-          description: User not found
-        "200":  
-          description: User Deleted
-          content:
+        "201":
+          description: Session created
+          content: 
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
-    delete:
-      summary: Delete user
-      tags:
-        - Users
-      parameters:
-        - in: path
-          name: user_id
-          schema:
-              $ref: '#/components/schemas/UserId'
-     
-      responses:
-        "400":
-          description: Invalid ID supplied
-        "404":
-          description: User not found
-        "200":  
-          description: User Deleted
-          content:
+                $ref: '#/components/schemas/Login'
+        "200":
+          description: Session returned
+          content: 
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
-  /session:
+                $ref: '#/components/schemas/Login'
+        "400":
+          description: Error on data
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "403":
+          description: Error on signin
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
     get:
-      summary: Get session
+      summary: Get info session
       tags:
-        - Session
-        - Users
-    post:
-      summary: Create session
-      tags:
-        - Session
-        - Users
-    patch:
-      summary: Update session
-      tags:
-        - Session
-        - Users
-    delete:
-      summary: Delete session
-      tags:
-        - Session
-        - Users
+        - Auth
+      parameters:
+        - $ref: '#/components/schemas/HeaderAppCode'
+        - $ref: '#/components/schemas/HeaderAppId'
+        - $ref: '#/components/schemas/HeaderIpRequest'
+        - $ref: '#/components/schemas/HeaderToken'
+      responses:
+        "200":
+          description: Session returned
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Login'
+        "400":
+          description: Error on data
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        "403":
+          description: Error on signin
+          content: 
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+         
+        
+
+
+
 components:
   schemas:
+    HeaderIpRequest:
+      in: header
+      name: request-ip
+      description: Ip from request
+      type: string
+      required: true
+    HeaderAppCode:
+      in: header
+      name: app-code
+      description: Code app on system
+      type: string
+      required: true
+    HeaderAppId:
+      in: header
+      name: app-id
+      type: string
+      format: uuid
+      required: true
+    HeaderToken:
+      in: header
+      name: token
+      description: Token of login
+      type: string
+      required: true
     UserId:
       type: string
       description: Object Id
@@ -175,17 +220,70 @@ components:
       properties:
         user_id:
           $ref: "#/components/schemas/UserId" 
-    UserForm:
+    UserEmail:
+      type: object
+      properties:
+        email: 
+          type: string
+          description: User email
+          required: true
+    UserUsername:
       type: object
       properties:
         username:
           type: string
-          description: User username
+          description: User username (Not required for Facebook nor Google)
+          required: false
+    UserIndetifier:
+      type: object
+      properties:
+        identifier:
+          type: string
+          description: Username or Email of user
+          required: true
+    UserBase:
+      type: object
+      properties:
+        type: 
+          type: string
+          description: Type of signup
+          required: true
+        hash:
+          type: string
+          description: Password encrypted or id_hash from google/facebook 
+          required: true
+    UserForm:
+      allOf:
+        - $ref: "#/components/schemas/UserEmail" 
+        - $ref: "#/components/schemas/UserUsername" 
+        - $ref: "#/components/schemas/UserBase"
+
+    UserLogin:
+      allOf:
+        - $ref: "#/components/schemas/UserIndetifier" 
+        - $ref: "#/components/schemas/UserBase"
+    
+    UserObject:
+      type: object
+      properties:
+        state:
+          type: string
+          description: State of user
           required: true
     User:
       allOf:
         - $ref: "#/components/schemas/UserIdObject"
         - $ref: "#/components/schemas/UserForm" 
+        - $ref: "#/components/schemas/UserObject" 
+    Login:
+      type: object
+      properties:
+        username:
+          type: string
+          required: true
+        token:
+          type: string
+          required: true
     Error:
       type: object
       properties:

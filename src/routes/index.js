@@ -18,7 +18,7 @@ const loadDir = (dirname = __dirname, prefix = '') => {
       if (fs.statSync(pathFile).isDirectory()) {
         loadDir(pathFile, path.join(prefix, file));
       } else {
-        router.use(`/${prefixRoute}`, require(pathFile).routes());
+        router.use(`/api/${prefixRoute}`, require(pathFile).routes());
       }
     });
 };

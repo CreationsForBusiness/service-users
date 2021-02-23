@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const { Schema } = mongoose;
 
-module.exports = new Schema({
+const schema = new Schema({
   code: {
     type: String,
     required: true,
@@ -10,7 +10,7 @@ module.exports = new Schema({
   status: {
     type: Boolean,
     required: true,
-    default: false,
+    default: true,
   },
   created: {
     type: Date,
@@ -23,3 +23,7 @@ module.exports = new Schema({
     default: Date.now,
   },
 });
+
+schema.statics.appFormat = (code) => ({ code });
+
+module.exports = schema;

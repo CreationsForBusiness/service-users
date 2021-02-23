@@ -1,12 +1,12 @@
 const Apps = require('../models/app.model');
+const { getRandomString } = require('../libs/commons.lib');
 const code = 'CFB_001';
 
 /**
  * Make any changes you need to make to the database here
  */
 async function up () {
-  return this('apps').create({ code, name: 'Envelopes', status: true, });
-
+  return this('apps').create({ code, name: 'Envelopes', status: true, uuid: getRandomString() });
 }
 
 /**
