@@ -4,7 +4,7 @@ const { environments } = require('../constants');
 const { env, mongo, debug } = environments;
 
 const {
-  host, port, database, user = false, pass = false,
+  host, port, database, user = false, pass = false, prefix, 
 } = mongo;
 
 class MongoDatabase {
@@ -12,7 +12,8 @@ class MongoDatabase {
     this.env = env;
     this.mongoose = mongoose;
     this.db = database;
-    this.dbURI = `mongodb://${host}:${port}/${this.db}`;
+    this.port = !!port ? `:${port}` : '';
+    this.dbURI = `${prefix}://${host}${this.port}/${this.db}`;
     this.reconnectInterval = 1500;
     this.mongoose.set('debug', debug);
     this.mongoose.Promise = global.Promise;

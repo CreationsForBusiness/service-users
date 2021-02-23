@@ -10,6 +10,7 @@ module.exports = {
     database: env.MONGO_DATABASE || 'users',
     user: env.MONGO_USER,
     pass: env.MONGO_PASS,
+    prefix: env.MONGO_PREFIX || 'mongodb',
   },
   jwt: {
     secret: env.JWT_SECRET || 'abc',
