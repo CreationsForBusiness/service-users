@@ -63,7 +63,7 @@ info:
 servers:
   - url: http://localhost:5000/api/v1
     description: Local for testing
-  - url: https://sandbox.users.creations.com/api/v1
+  - url: https://users-creations.herokuapp.com/api/v1
     description: Sandox for testing
     
 
