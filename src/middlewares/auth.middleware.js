@@ -1,12 +1,16 @@
+const validRequest = ['/', '/favicon.ico']
+
 module.exports = async (ctx, next) => {
-  const { models } = ctx;
+  const { models, request } = ctx;
+  const { url } = request;
   const { apps } = models;
   const appCode = ctx.get('app-code');
   const appId = ctx.get('app-id');
   const ip = ctx.get('request-ip');
   const {
     valid, errorID, errorCode, message,
-  } = await apps.validateApp(appCode, appId);
+  } = validRequest.includes(url)  ? { valid: true } : await apps.validateApp(appCode, appId);
+
   if (!valid) {
     ctx.code = `${errorCode}-${errorID}`;
     ctx.throw(403, message);
