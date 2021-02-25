@@ -63,7 +63,7 @@ info:
 servers:
   - url: http://localhost:5000/api/v1
     description: Local for testing
-  - url: https://users-creations.herokuapp.com/api/v1
+  - url: https://sandbox.users.creations.com/api/v1
     description: Sandox for testing
     
 
@@ -180,11 +180,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-         
-        
-
-
-
 components:
   schemas:
     HeaderIpRequest:
@@ -197,19 +192,23 @@ components:
       in: header
       name: app-code
       description: Code app on system
-      type: string
+      schema:
+        type: string
       required: true
     HeaderAppId:
       in: header
       name: app-id
-      type: string
+      description: App id on system
+      schema:
+        type: string
       format: uuid
       required: true
     HeaderToken:
       in: header
       name: token
       description: Token of login
-      type: string
+      schema:
+        type: string
       required: true
     UserId:
       type: string
