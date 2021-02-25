@@ -1,4 +1,4 @@
-const validRequest = ['/', '/favicon.ico']
+const validRequest = ['/', '/favicon.ico', '/apidoc']
 
 module.exports = async (ctx, next) => {
   const { models, request } = ctx;

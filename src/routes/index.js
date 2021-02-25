@@ -4,6 +4,9 @@
 const fs = require('fs');
 const path = require('path');
 const Router = require('koa-router');
+const yaml = require('js-yaml');
+
+const fileyaml = fs.readFileSync(path.resolve(path.join('docs', 'api', 'v1.yaml')), 'utf8');
 
 const router = Router();
 
@@ -33,5 +36,9 @@ router.get('/', async (ctx) => {
     env: ctx.env,
   };
 });
+
+router.get('/apidoc', async (ctx) => {
+  ctx.body = yaml.load(fileyaml);
+})
 
 module.exports = router;

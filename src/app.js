@@ -1,5 +1,7 @@
 require('dotenv').config();
+const path = require('path');
 const Koa = require('koa');
+const serve = require('koa-static');
 const cors = require('@koa/cors');
 const logger = require('koa-morgan');
 const bodyParser = require('koa-bodyparser');
@@ -13,6 +15,9 @@ const models = require('./models');
 const middlewares = require('./middlewares');
 
 const app = new Koa();
+
+// Static files
+app.use(serve(path.join(__dirname, 'public')));
 
 // Logger
 app.use(
