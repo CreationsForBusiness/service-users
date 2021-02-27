@@ -275,15 +275,31 @@ components:
         - $ref: "#/components/schemas/UserIdObject"
         - $ref: "#/components/schemas/UserForm" 
         - $ref: "#/components/schemas/UserObject" 
-    Login:
+    UserInfo:
       type: object
       properties:
-        username:
-          type: string
-          required: true
-        token:
-          type: string
-          required: true
+        emails:
+          type: array
+          items:
+            type: string
+          description: Emails associated to user
+        logins:
+          type: array
+          items:
+            type: string
+          description: Apps associated to user
+        created: 
+          type: integer
+          description: Date of creation of token
+        expiration: 
+          type: integer
+          description: Date of expiration of token
+    Login:
+      allOf:
+        - $ref: "#/components/schemas/UserObject" 
+        - $ref: "#/components/schemas/UserUsername" 
+        - $ref: "#/components/schemas/UserInfo" 
+
     Error:
       type: object
       properties:
