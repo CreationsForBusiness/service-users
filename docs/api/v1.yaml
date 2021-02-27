@@ -186,7 +186,8 @@ components:
       in: header
       name: request-ip
       description: Ip from request
-      type: string
+      schema:
+        type: string
       required: true
     HeaderAppCode:
       in: header
