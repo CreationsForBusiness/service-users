@@ -4,7 +4,7 @@ const { environments } = require('../constants');
 const { env, mongo, debug } = environments;
 
 const {
-  host, port, database, user = false, pass = false, prefix, 
+  host, port, database, user = false, pass = false, prefix,
 } = mongo;
 
 class MongoDatabase {

@@ -1,4 +1,4 @@
-const validRequest = ['/', '/favicon.ico', '/apidoc']
+const validRequest = ['/', '/favicon.ico', '/apidoc'];
 
 module.exports = async (ctx, next) => {
   const { models, request } = ctx;
@@ -9,7 +9,7 @@ module.exports = async (ctx, next) => {
   const ip = ctx.get('request-ip');
   const {
     valid, errorID, errorCode, message,
-  } = validRequest.includes(url)  ? { valid: true } : await apps.validateApp(appCode, appId);
+  } = validRequest.includes(url) ? { valid: true } : await apps.validateApp(appCode, appId);
 
   if (!valid) {
     ctx.code = `${errorCode}-${errorID}`;

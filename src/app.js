@@ -56,12 +56,12 @@ app.use(async (ctx, next) => {
     const response = {
       code: ctx.code,
       message: err.message,
-    }
-    if(environments.debug) {
+    };
+    if (environments.debug) {
       response.description = err.stack;
     }
     ctx.status = err.statusCode || err.status || 500;
-    ctx.body = response
+    ctx.body = response;
   }
 });
 app.use(middlewares.validator);

@@ -39,6 +39,6 @@ router.get('/', async (ctx) => {
 
 router.get('/apidoc', async (ctx) => {
   ctx.body = yaml.load(fileyaml);
-})
+});
 
 module.exports = router;
