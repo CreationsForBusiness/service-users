@@ -9,7 +9,7 @@ const {
   max_username: longUsername,
 } = require('../constants');
 
-const { login_types: loginTypes } = enums;
+const { login_types: loginTypes, user_state: userState } = enums;
 const { password, google, facebook } = loginTypes;
 
 const Info = require('./schemas/info.schema');
@@ -78,20 +78,22 @@ schema.statics.setVal = (user, field, value = true) => {
 };
 
 schema.statics.setHasType = function setHasType(user, value = true) {
-  return this.setVal(user, 'hasType', value);
+  return this.setVal(user, 'hasType', !!value);
 };
 
 schema.statics.setAddType = function setAddType(user, value = true) {
-  return this.setVal(user, 'addType', value);
+  return this.setVal(user, 'addType', !!value);
 };
 
-schema.statics.setAccessToken = function setAccessToken(user, ip, generate = true) {
+schema.statics.setAccessToken = function setAccessToken(user, ip, type) {
   const { token_state: tokenState } = enums;
   const [active, pending] = tokenState;
   const hasIp = this.hasIp(user, ip);
   const { username } = user;
-  return this.model('tokens').generate(hasIp ? active : pending, ip, { username })
-    .then((token) => this.setVal(user, 'accessToken', generate ? token : null));
+  const state = hasIp ? active : pending;
+  const info = { username, type };
+  return this.model('tokens').generate(state, ip, info)
+    .then((token) => this.setVal(user, 'accessToken', token));
 };
 
 schema.statics.setMessage = function setMessage(user, message) {
@@ -103,7 +105,7 @@ schema.statics.addType = function addPasswordType(user, hash, app, type, ip) {
   const hasApp = this.hasApp(user, app);
   const hasIP = this.hasIp(user, ip);
   const data = {
-    'info.type': Info.statics.typeFormat(type, hash, username),
+    'info.type': Info.statics.typeFormat(type, hash, username, type !== password),
   };
   if (!hasApp) {
     data['info.app'] = Info.statics.appFormat(app);
@@ -144,7 +146,7 @@ schema.statics.validatePassword = function validatePassword(user, type, hash, ip
       if (!access) {
         return user;
       }
-      return this.setAccessToken(user, ip);
+      return this.setAccessToken(user, ip, type);
     });
 };
 
@@ -154,23 +156,23 @@ schema.statics.createUserOnApp = function createUserOnApp(email, username, type,
       ? this.addAppToUser(user, app, ip, type, hash)
       : this.create({
         username,
-        info: Info.statics.infoFormat(email, type, hash, app, username),
-        ip_registered: [IP.statics.ipFormat(ip, type !== password)],
+        info: Info.statics.infoFormat(email, type, hash, app, username, type !== password),
+        ip_registered: [IP.statics.ipFormat(ip)],
       })
     ))
     .then(({ username: un, hasType, addType }) => this.getUser(un, hasType, addType))
     .then((user) => this.validatePassword(user, type, hash, ip))
     .then((user) => {
       if (!user.AddType && user.hasType && !user.accessToken && type === password) {
-        return this.setMessage(user, 'User already exist');
+        return this.setMessage(user, 'Invalid Password');
       } if (!user.AddType && user.hasType && !user.accessToken) {
         return this.setMessage(user, 'User cannot validate login type with data received');
       } if (user.addType && type === password) {
-        return this.setAccessToken(user, ip, false);
+        return this.setAccessToken(user, ip, type);
       }
       return user;
     })
-    .then((user) => this.userObject(user, type));
+    .then(this.userObject);
 };
 
 schema.statics.signup = function signup(email, username, type, ip, hash, app) {
@@ -185,30 +187,20 @@ schema.statics.getUser = function getUser(username, hasType = false, addType = f
     .then((user) => this.setAddType(user, addType));
 };
 
-schema.statics.userObject = function userObject(user, type) {
+schema.statics.userObject = function userObject(user) {
   const {
     username, accessToken = null, message = null, addType, hasType,
   } = user;
-  const currentType = this.getType(user, type);
-  const isActive = Info.statics.isPasswordActive(currentType, type);
-  const data = { username };
-  // TO DO remove state from here
-  let state = 201;
 
-  if (isActive && !!accessToken) {
+  const data = { username, is_new: !hasType && !addType, is_modify: addType };
+
+  if (accessToken) {
     data.token = accessToken;
-  } else if (isActive && message !== null) {
-    data.message = 'Invalid Password';
   }
   if (message) {
     data.message = message;
   }
-  if (!!hasType && !addType) {
-    state = 200;
-  } else if (!hasType && !!addType) {
-    state = 202;
-  }
-  data.state = state;
+
   return data;
 };
 
@@ -231,13 +223,17 @@ schema.statics.signin = function signin(identifier, type, hash, ip, app) {
       throw new Error('User does not exist');
     })
     .then((user) => this.validatePassword(user, type, hash, ip))
-    .then((user) => this.userObject(user, type))
+    .then(this.userObject)
     .catch((err) => this.setMessage({}, err));
 };
 
-schema.statics.userSession = function userSession(user, created, expiration) {
-  const { username, info, state } = user;
+schema.statics.userSession = function userSession(user, created, expiration, state = userState[0]) {
+  const { username, info } = user;
   const { mail: emails = [], type = [] } = info;
+  console.log(state);
+  if (state !== userState[0]) {
+    return { username, state };
+  }
   return {
     username,
     state,
@@ -250,13 +246,32 @@ schema.statics.userSession = function userSession(user, created, expiration) {
 
 schema.statics.getDataToken = function getDataToken(token, ip) {
   return this.model('tokens').check(token, ip)
-    .then(({ username, createdAt, expiredAt }) => (
-      this.getUser(username).then(((user) => ({ user, createdAt, expiredAt })))))
-    .then(({ user, createdAt, expiredAt }) => {
-      if (!!user && user.state === enums.user_state_default) {
+    .then(({
+      username, createdAt, expiredAt, type,
+    }) => (
+      this.getUser(username).then(((user) => ({
+        user, createdAt, expiredAt, type,
+      })))))
+    .then(({
+      user, createdAt, expiredAt, type,
+    }) => {
+      if (
+        !!user
+        && user.state === enums.user_state_default
+        && Info.statics.isPasswordActive(this.getType(user, type), type)
+        && this.hasIp(user, ip)
+      ) {
         return this.userSession(user, createdAt, expiredAt);
+      } if (
+        !!user
+        && this.hasIp(user, ip)
+        && !Info.statics.isPasswordActive(this.getType(user, type), type)
+      ) {
+        return this.userSession(user, createdAt, expiredAt, userState[3]);
+      } if (!!user && !this.hasIp(user, ip)) {
+        return this.userSession(user, createdAt, expiredAt, userState[4]);
       } if (user) {
-        throw new Error('User is not active');
+        return this.userSession(user, createdAt, expiredAt, user.state);
       }
       throw new Error('User does not exist');
     })

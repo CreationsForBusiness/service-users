@@ -35,10 +35,10 @@ const schema = new Schema({
   },
 });
 
-schema.statics.infoFormat = function infoFormat(mail, type, hash, app, username) {
+schema.statics.infoFormat = function infoFormat(mail, type, hash, app, username, passwordActive) {
   return {
     mail: [mail],
-    type: this.typeFormat(type, hash, username),
+    type: this.typeFormat(type, hash, username, passwordActive),
     app: this.appFormat(app),
   };
 };

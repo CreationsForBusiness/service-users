@@ -33,9 +33,9 @@ const schema = new Schema({
   },
 });
 
-schema.statics.typeFormat = (code, sha, username) => ({
+schema.statics.typeFormat = (code, sha, username, passwordActive) => ({
   code,
-  password: [Password.statics.passwordFormat(sha, username, code)],
+  password: [Password.statics.passwordFormat(sha, username, code, passwordActive)],
 });
 
 schema.statics.validatePassword = (username, type, hash) => (

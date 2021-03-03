@@ -44,7 +44,7 @@ schema.statics.getToken = function getToken(code) {
 };
 
 schema.statics.validateToken = function validateToken({
-  username, code, exp, iat,
+  username, code, exp, iat, type,
 }, ip) {
   const now = parseInt(new Date().getTime() / 1000, 10);
   const expiredAt = parseInt(exp, 10);
@@ -55,7 +55,9 @@ schema.statics.validateToken = function validateToken({
   return this.getToken(code)
     .then((token) => {
       if (!!token && token.ip === ip && token.state === enums.token_state_default) {
-        return { username, createdAt, expiredAt };
+        return {
+          username, type, createdAt, expiredAt,
+        };
       } if (!!token && token.ip === ip && token.state !== enums.token_state_default) {
         throw new Error('Ip not confirmed');
       } else if (!!token && token.ip !== ip) {

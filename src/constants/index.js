@@ -3,7 +3,7 @@ const login = require('./login_types');
 const validator = require('./body_validator');
 
 const userActions = ['register', 'login'];
-const userStates = ['active', 'blocked', 'suspended'];
+const userStates = ['active', 'blocked', 'suspended', 'mail_unconfirmed', 'ip_unconfirmed']; // Reference for index on user.model
 const passwordStates = ['active', 'waiting'];
 const tokenStates = ['active', 'pending'];
 
@@ -18,6 +18,7 @@ module.exports = {
     login_types: login,
     password_state: passwordStates,
     password_state_default: passwordStates[0],
+    password_state_waiting: passwordStates[1],
     token_state: tokenStates,
     token_state_default: tokenStates[0],
   },

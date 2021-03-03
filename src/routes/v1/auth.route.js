@@ -15,6 +15,9 @@ const checkLoginType = (ctx, type) => {
 };
 
 const buildResponse = (ctx, response) => {
+  const {
+    is_new: isNew = false, is_modify: isModify = false, username, token,
+  } = response;
   if (
     !Object.prototype.hasOwnProperty.call(response, 'username')
     && Object.prototype.hasOwnProperty.call(response, 'message')
@@ -28,7 +31,14 @@ const buildResponse = (ctx, response) => {
     ctx.code = `${errorCode}-3`;
     ctx.throw(400, response.message);
   }
-  return response;
+  if (isNew) {
+    ctx.status = 201;
+  } else if (isModify) {
+    ctx.status = 202;
+  } else {
+    ctx.status = 200;
+  }
+  return { username, token };
 };
 
 router.post('/', async (ctx) => {
@@ -41,11 +51,10 @@ router.post('/', async (ctx) => {
     email, username, type, hash,
   } = body;
   const validType = checkLoginType(ctx, type);
-  const { state = 500, ...signup } = await users
+  const { ...signup } = await users
     .signup(email, username, validType, ip, hash, appCode);
   const response = buildResponse(ctx, signup);
 
-  ctx.status = state;
   ctx.body = response;
 });
 
@@ -59,10 +68,9 @@ router.post('/session', async (ctx) => {
     identifier, type, hash,
   } = body;
   const validType = checkLoginType(ctx, type);
-  const { state = 500, ...signin } = await users.signin(identifier, validType, hash, ip, appCode);
+  const { ...signin } = await users.signin(identifier, validType, hash, ip, appCode);
   const response = buildResponse(ctx, signin);
 
-  ctx.status = state;
   ctx.body = response;
 });
 
