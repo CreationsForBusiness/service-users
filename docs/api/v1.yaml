@@ -278,10 +278,8 @@ components:
     UserInfo:
       type: object
       properties:
-        emails:
-          type: array
-          items:
-            type: string
+        email:
+          type: string
           description: Emails associated to user
         logins:
           type: array
@@ -294,11 +292,16 @@ components:
         expiration: 
           type: integer
           description: Date of expiration of token
+    UserToken:
+      type: object
+      properties:
+        token:
+          type: string
+          description: Token of acces
     Login:
       allOf:
-        - $ref: "#/components/schemas/UserObject" 
         - $ref: "#/components/schemas/UserUsername" 
-        - $ref: "#/components/schemas/UserInfo" 
+        - $ref: "#/components/schemas/UserToken" 
 
     Error:
       type: object
