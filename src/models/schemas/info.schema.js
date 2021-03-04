@@ -7,7 +7,7 @@ const App = require('./app.schema');
 
 const schema = new Schema({
   mail: {
-    type: [String],
+    type: String,
     required: true,
   },
   type: {
@@ -37,7 +37,7 @@ const schema = new Schema({
 
 schema.statics.infoFormat = function infoFormat(mail, type, hash, app, username, passwordActive) {
   return {
-    mail: [mail],
+    mail,
     type: this.typeFormat(type, hash, username, passwordActive),
     app: this.appFormat(app),
   };

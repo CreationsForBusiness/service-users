@@ -16,7 +16,7 @@ const checkLoginType = (ctx, type) => {
 
 const buildResponse = (ctx, response) => {
   const {
-    is_new: isNew = false, is_modify: isModify = false, username, token,
+    is_new: isNew = false, is_modify: isModify = false, username, token = null,
   } = response;
   if (
     !Object.prototype.hasOwnProperty.call(response, 'username')

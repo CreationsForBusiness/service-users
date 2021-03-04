@@ -42,6 +42,8 @@ const schema = new Schema({
   },
 });
 
+schema.statics.Unauthorized = 'Invalid Credential';
+
 schema.statics.nextUsername = (username) => `${username}${getRandomNumber(0, 99, 2)}`;
 
 schema.statics.getEmail = function getEmail(email) {
@@ -60,9 +62,9 @@ schema.statics.getUsername = function getUsername(usernameSuggested, type, origi
       : this.getUsername(this.nextUsername(username), type, first, attempt + 1)));
 };
 
-schema.statics.hasApp = ({ info = [] }, app) => !!info.app.find(({ code }) => code === app);
+schema.statics.hasApp = ({ info = {} }, app) => !!info.app.find(({ code }) => code === app);
 
-schema.statics.getType = ({ info }, type) => info.type.find(({ code }) => code === type);
+schema.statics.getType = ({ info = {} }, type) => info.type.find(({ code }) => code === type);
 
 schema.statics.hasType = function hasType({ info }, type) {
   return !!this.getType({ info }, type);
@@ -163,16 +165,14 @@ schema.statics.createUserOnApp = function createUserOnApp(email, username, type,
     .then(({ username: un, hasType, addType }) => this.getUser(un, hasType, addType))
     .then((user) => this.validatePassword(user, type, hash, ip))
     .then((user) => {
-      if (!user.AddType && user.hasType && !user.accessToken && type === password) {
-        return this.setMessage(user, 'Invalid Password');
-      } if (!user.AddType && user.hasType && !user.accessToken) {
-        return this.setMessage(user, 'User cannot validate login type with data received');
+      if (!user.AddType && user.hasType && !user.accessToken) {
+        return this.setMessage(user, this.Unauthorized);
       } if (user.addType && type === password) {
         return this.setAccessToken(user, ip, type);
       }
       return user;
     })
-    .then(this.userObject);
+    .then(this.userObject.bind(this));
 };
 
 schema.statics.signup = function signup(email, username, type, ip, hash, app) {
@@ -192,12 +192,19 @@ schema.statics.userObject = function userObject(user) {
     username, accessToken = null, message = null, addType, hasType,
   } = user;
 
-  const data = { username, is_new: !hasType && !addType, is_modify: addType };
+  const hasToken = !!accessToken;
 
-  if (accessToken) {
-    data.token = accessToken;
-  }
-  if (message) {
+  const data = {
+    username,
+    is_new: !hasType && !addType,
+    is_modify: addType,
+    token: accessToken,
+  };
+
+  if (!hasToken) {
+    delete data.username;
+    data.message = this.Unauthorized;
+  } else if (message) {
     data.message = message;
   }
 
@@ -213,30 +220,32 @@ schema.statics.addTypeOnSignIn = function addTypeOnSignIn(user, hash, app, type,
 schema.statics.signin = function signin(identifier, type, hash, ip, app) {
   return this.findOne({ status: true, $or: [{ username: identifier }, { 'info.mail': identifier }] })
     .then((user) => {
-      if (!!user && this.hasApp(user, app) && this.hasType(user, type)) {
+      if (
+        !!user
+        && this.hasApp(user, app)
+        && this.hasType(user, type)
+      ) {
         return user;
       } if (!!user && !this.hasType(user, type)) {
         return this.addTypeOnSignIn(user, hash, app, type, ip);
-      } if (user) {
-        throw new Error('User not registered in this app');
       }
-      throw new Error('User does not exist');
+      throw new Error(this.Unauthorized);
     })
     .then((user) => this.validatePassword(user, type, hash, ip))
-    .then(this.userObject)
+    .then(this.userObject.bind(this))
     .catch((err) => this.setMessage({}, err));
 };
 
 schema.statics.userSession = function userSession(user, created, expiration, state = userState[0]) {
   const { username, info } = user;
-  const { mail: emails = [], type = [] } = info;
+  const { mail: email = 'nomail', type = [] } = info;
   if (state !== userState[0]) {
     return { username, state };
   }
   return {
     username,
     state,
-    emails,
+    email,
     logins: type.filter(({ status }) => !!status).map(({ code }) => code),
     created,
     expiration,
