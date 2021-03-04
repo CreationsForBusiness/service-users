@@ -230,7 +230,6 @@ schema.statics.signin = function signin(identifier, type, hash, ip, app) {
 schema.statics.userSession = function userSession(user, created, expiration, state = userState[0]) {
   const { username, info } = user;
   const { mail: emails = [], type = [] } = info;
-  console.log(state);
   if (state !== userState[0]) {
     return { username, state };
   }

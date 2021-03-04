@@ -42,8 +42,8 @@ schema.statics.infoFormat = function infoFormat(mail, type, hash, app, username,
     app: this.appFormat(app),
   };
 };
-schema.statics.typeFormat = (type, hash, username) => (
-  Type.statics.typeFormat(type, hash, username)
+schema.statics.typeFormat = (type, hash, username, passwordActive) => (
+  Type.statics.typeFormat(type, hash, username, passwordActive)
 );
 
 schema.statics.appFormat = (app) => App.statics.appFormat(app);

@@ -59,7 +59,6 @@ schema.statics.validateHash = function validateHash(sha, type, username, hash) {
 };
 
 schema.statics.isPasswordActive = function isPasswordActive(types, type) {
-  console.log(types, type);
   const { state } = this.getPassword(types, type);
   return state === defaultValue.password_state_default;
 };
@@ -76,14 +75,14 @@ schema.statics.validatePassword = function validatePassword(username, type, stri
   return Promise.resolve({ access: this.validateHash(string, code, username, sha) });
 };
 
-schema.statics.passwordFormat = function passwordFormat(password, username, login, type, active) {
+schema.statics.passwordFormat = function passwordFormat(password, username, login, active) {
   const code = getRandomString();
   const sha = this.getHash(password, login, username);
   const state = active
     ? defaultValue.password_state_default
     : defaultValue.password_state_waiting;
   return {
-    sha, type, code, state,
+    sha, code, state,
   };
 };
 
