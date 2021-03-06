@@ -7,7 +7,6 @@ module.exports = {
     description: 'User fields for signup',
     properties: {
       email: { type: 'string', format: 'email' },
-      username: { type: 'string', format: 'username' },
       type: { type: 'string' },
       hash: { type: 'string' },
     },
@@ -20,11 +19,11 @@ module.exports = {
     title: 'Signin Form',
     description: 'User fields for signin',
     properties: {
-      identifier: { type: 'string' },
+      email: { type: 'string' },
       type: { type: 'string' },
       hash: { type: 'string' },
     },
-    required: ['identifier', 'type', 'hash'],
+    required: ['email', 'type', 'hash'],
 
   },
 };

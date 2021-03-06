@@ -16,16 +16,16 @@ const checkLoginType = (ctx, type) => {
 
 const buildResponse = (ctx, response) => {
   const {
-    is_new: isNew = false, is_modify: isModify = false, username, token = null,
+    is_new: isNew = false, is_modify: isModify = false, email, token = null,
   } = response;
   if (
-    !Object.prototype.hasOwnProperty.call(response, 'username')
+    !Object.prototype.hasOwnProperty.call(response, 'email')
     && Object.prototype.hasOwnProperty.call(response, 'message')
   ) {
     ctx.code = `${errorCode}-2`;
     ctx.throw(403, response.message);
   } else if (
-    Object.prototype.hasOwnProperty.call(response, 'username')
+    Object.prototype.hasOwnProperty.call(response, 'email')
     && Object.prototype.hasOwnProperty.call(response, 'message')
   ) {
     ctx.code = `${errorCode}-3`;
@@ -38,7 +38,7 @@ const buildResponse = (ctx, response) => {
   } else {
     ctx.status = 200;
   }
-  return { username, token };
+  return { email, token };
 };
 
 router.post('/', async (ctx) => {
@@ -48,11 +48,11 @@ router.post('/', async (ctx) => {
   const { users } = models;
   const { body } = request;
   const {
-    email, username, type, hash,
+    email, type, hash,
   } = body;
   const validType = checkLoginType(ctx, type);
   const { ...signup } = await users
-    .signup(email, username, validType, ip, hash, appCode);
+    .signup(email, validType, ip, hash, appCode);
   const response = buildResponse(ctx, signup);
 
   ctx.body = response;
@@ -65,10 +65,10 @@ router.post('/session', async (ctx) => {
   const { users } = models;
   const { body } = request;
   const {
-    identifier, type, hash,
+    email, type, hash,
   } = body;
   const validType = checkLoginType(ctx, type);
-  const { ...signin } = await users.signin(identifier, validType, hash, ip, appCode);
+  const { ...signin } = await users.signin(email, validType, hash, ip, appCode);
   const response = buildResponse(ctx, signin);
 
   ctx.body = response;

@@ -23,5 +23,4 @@ module.exports = {
     token_state_default: tokenStates[0],
   },
   validator,
-  max_username: 32,
 };

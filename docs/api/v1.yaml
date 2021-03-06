@@ -227,20 +227,6 @@ components:
           type: string
           description: User email
           required: true
-    UserUsername:
-      type: object
-      properties:
-        username:
-          type: string
-          description: User username (Not required for Facebook nor Google)
-          required: false
-    UserIndetifier:
-      type: object
-      properties:
-        identifier:
-          type: string
-          description: Username or Email of user
-          required: true
     UserBase:
       type: object
       properties:
@@ -255,12 +241,11 @@ components:
     UserForm:
       allOf:
         - $ref: "#/components/schemas/UserEmail" 
-        - $ref: "#/components/schemas/UserUsername" 
         - $ref: "#/components/schemas/UserBase"
 
     UserLogin:
       allOf:
-        - $ref: "#/components/schemas/UserIndetifier" 
+        - $ref: "#/components/schemas/UserEmail" 
         - $ref: "#/components/schemas/UserBase"
     
     UserObject:
@@ -300,7 +285,7 @@ components:
           description: Token of acces
     Login:
       allOf:
-        - $ref: "#/components/schemas/UserUsername" 
+        - $ref: "#/components/schemas/UserEmail" 
         - $ref: "#/components/schemas/UserToken" 
 
     Error:

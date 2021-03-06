@@ -44,17 +44,17 @@ const schema = new Schema({
   },
 });
 
-schema.statics.getPlain = (sha, type, username) => `${sha}-${type}-${username}`;
+schema.statics.getPlain = (sha, type, email) => `${sha}-${type}-${email}`;
 
-schema.statics.getHash = function getHash(sha, type, username) {
-  const plain = this.getPlain(sha, type, username);
+schema.statics.getHash = function getHash(sha, type, email) {
+  const plain = this.getPlain(sha, type, email);
   const salt = bcrypt.genSaltSync(12);
   const hash = bcrypt.hashSync(plain, salt);
   return hash;
 };
 
-schema.statics.validateHash = function validateHash(sha, type, username, hash) {
-  const plain = this.getPlain(sha, type, username);
+schema.statics.validateHash = function validateHash(sha, type, email, hash) {
+  const plain = this.getPlain(sha, type, email);
   return bcrypt.compareSync(plain, hash);
 };
 
@@ -66,18 +66,18 @@ schema.statics.isPasswordActive = function isPasswordActive(types, type) {
 schema.statics.getPassword = ({ password = [] }) => password
   .find(({ status }) => status) || {};
 
-schema.statics.validatePassword = function validatePassword(username, type, string) {
+schema.statics.validatePassword = function validatePassword(email, type, string) {
   const { code } = type;
   const { sha } = this.getPassword(type);
   if (!sha) {
     return Promise.reject(new Error('Password missing'));
   }
-  return Promise.resolve({ access: this.validateHash(string, code, username, sha) });
+  return Promise.resolve({ access: this.validateHash(string, code, email, sha) });
 };
 
-schema.statics.passwordFormat = function passwordFormat(password, username, login, active) {
+schema.statics.passwordFormat = function passwordFormat(password, email, login, active) {
   const code = getRandomString();
-  const sha = this.getHash(password, login, username);
+  const sha = this.getHash(password, login, email);
   const state = active
     ? defaultValue.password_state_default
     : defaultValue.password_state_waiting;

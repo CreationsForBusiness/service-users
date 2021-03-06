@@ -107,3 +107,4 @@ dist
 # IDE
 .vscode/*
 .history/
+.DS_store

@@ -6,10 +6,6 @@ const Type = require('./type.schema');
 const App = require('./app.schema');
 
 const schema = new Schema({
-  mail: {
-    type: String,
-    required: true,
-  },
   type: {
     type: [Type],
     required: true,
@@ -35,21 +31,21 @@ const schema = new Schema({
   },
 });
 
-schema.statics.infoFormat = function infoFormat(mail, type, hash, app, username, passwordActive) {
+schema.statics.loginFormat = function loginFormat(email, type, hash, app, passwordActive) {
   return {
-    mail,
-    type: this.typeFormat(type, hash, username, passwordActive),
+    type: this.typeFormat(type, hash, email, passwordActive),
     app: this.appFormat(app),
   };
 };
-schema.statics.typeFormat = (type, hash, username, passwordActive) => (
-  Type.statics.typeFormat(type, hash, username, passwordActive)
+
+schema.statics.typeFormat = (type, hash, email, passwordActive) => (
+  Type.statics.typeFormat(type, hash, email, passwordActive)
 );
 
 schema.statics.appFormat = (app) => App.statics.appFormat(app);
 
-schema.statics.validatePassword = (username, type, hash) => (
-  Type.statics.validatePassword(username, type, hash)
+schema.statics.validatePassword = (email, type, hash) => (
+  Type.statics.validatePassword(email, type, hash)
 );
 
 schema.statics.isPasswordActive = (types, type) => Type.statics.isPasswordActive(types, type);

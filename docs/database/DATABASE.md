@@ -6,8 +6,8 @@
 
 | Field | Type | Required | Description |
 | ----- | ---- | -------- | ----------- |
-| username | String | yes | username of user |
-| info | Info | yes | Array of emails registered by user |
+| email | String | yes | email of user |
+| login | Login | yes | Array of emails registered by user |
 | status | Boolean | yes | Status of user |
 | state  | String | yes | state of account |
 | ip_registered | Array[IP] | yes | Ip registered by user |
@@ -42,12 +42,11 @@
 
 ## Schemas
 
-### Info
+### Login
 
 
 | Field | Type | Required | Description |
 | ----- | ---- | -------- | ----------- |
-| mail | Array[String] | yes | email address of user  |
 | type | Array[Type] | yes | Type of register |
 | app | Array [App]  | yes | App registered by email |
 | status | Boolean | yes | Status of email  |

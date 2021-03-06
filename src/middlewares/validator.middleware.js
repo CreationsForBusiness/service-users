@@ -7,7 +7,6 @@ const validateFormat = (expr, input) => new RegExp(expr).test(input);
 
 validator.addFormat('email', { validate: (input) => validateFormat(/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/, input) });
 validator.addFormat('ip', { validate: (input) => validateFormat(/^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/, input) });
-validator.addFormat('username', { validate: (input) => validateFormat(/^[A-Za-z]+/, input) });
 
 module.exports = async (ctx, next) => {
   const { originalUrl, request } = ctx;

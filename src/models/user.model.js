@@ -2,26 +2,23 @@ const mongoose = require('mongoose');
 
 const { Schema } = mongoose;
 
-const { getRandomNumber, getRandomString } = require('../libs/commons.lib');
-
 const {
   database_fixed_values: enums,
-  max_username: longUsername,
 } = require('../constants');
 
 const { login_types: loginTypes, user_state: userState } = enums;
 const { password, google, facebook } = loginTypes;
 
-const Info = require('./schemas/info.schema');
+const Login = require('./schemas/login.schema');
 const IP = require('./schemas/ip.schema');
 
 const schema = new Schema({
-  username: {
+  email: {
     type: String,
     required: true,
   },
-  info: {
-    type: Info,
+  login: {
+    type: Login,
     required: true,
     default: [],
   },
@@ -44,30 +41,16 @@ const schema = new Schema({
 
 schema.statics.Unauthorized = 'Invalid Credential';
 
-schema.statics.nextUsername = (username) => `${username}${getRandomNumber(0, 99, 2)}`;
-
 schema.statics.getEmail = function getEmail(email) {
-  return this.findOne({ 'info.mail': email });
+  return this.findOne({ email });
 };
 
-schema.statics.getUsername = function getUsername(usernameSuggested, type, original, attempt = 0) {
-  const username = type === password ? usernameSuggested : getRandomString().replace(/[-+()\s1-9]/g, '');
-  const first = original ? username : original;
-  if (username.length > longUsername && attempt >= 10) {
-    return Promise.reject(new Error('Username cant be generated'));
-  }
-  return this.exists({ username })
-    .then((exist) => (!exist
-      ? username
-      : this.getUsername(this.nextUsername(username), type, first, attempt + 1)));
-};
+schema.statics.hasApp = ({ login = {} }, app) => !!login.app.find(({ code }) => code === app);
 
-schema.statics.hasApp = ({ info = {} }, app) => !!info.app.find(({ code }) => code === app);
+schema.statics.getType = ({ login = {} }, type) => login.type.find(({ code }) => code === type);
 
-schema.statics.getType = ({ info = {} }, type) => info.type.find(({ code }) => code === type);
-
-schema.statics.hasType = function hasType({ info }, type) {
-  return !!this.getType({ info }, type);
+schema.statics.hasType = function hasType({ login }, type) {
+  return !!this.getType({ login }, type);
 };
 
 schema.statics.hasIp = ({ ip_registered: ips }, newIp) => !!ips
@@ -91,9 +74,9 @@ schema.statics.setAccessToken = function setAccessToken(user, ip, type) {
   const { token_state: tokenState } = enums;
   const [active, pending] = tokenState;
   const hasIp = this.hasIp(user, ip);
-  const { username } = user;
+  const { email } = user;
   const state = hasIp ? active : pending;
-  const info = { username, type };
+  const info = { email, type };
   return this.model('tokens').generate(state, ip, info)
     .then((token) => this.setVal(user, 'accessToken', token));
 };
@@ -103,20 +86,20 @@ schema.statics.setMessage = function setMessage(user, message) {
 };
 
 schema.statics.addType = function addPasswordType(user, hash, app, type, ip) {
-  const { username } = user;
+  const { email } = user;
   const hasApp = this.hasApp(user, app);
   const hasIP = this.hasIp(user, ip);
   const data = {
-    'info.type': Info.statics.typeFormat(type, hash, username, type !== password),
+    'login.type': Login.statics.typeFormat(type, hash, email, type !== password),
   };
   if (!hasApp) {
-    data['info.app'] = Info.statics.appFormat(app);
+    data['login.app'] = Login.statics.appFormat(app);
   }
   if (!hasIP) {
     data.ip_registered = IP.statics.ipFormat(ip, type !== password);
   }
-  return this.updateOne({ username }, { $push: data }, { runValidators: true })
-    .then(({ n }) => ((n === 0) ? this.setHasType(user) : user));
+  return this.updateOne({ email }, { $push: data }, { runValidators: true })
+    .then(({ n: modified }) => (modified === 0 ? this.setHasType(user) : user));
 };
 
 schema.statics.addAppToUser = function addAppToUser(user, app, ip, type, hash) {
@@ -141,9 +124,9 @@ schema.statics.addAppToUser = function addAppToUser(user, app, ip, type, hash) {
 };
 
 schema.statics.validatePassword = function validatePassword(user, type, hash, ip) {
-  const { username } = user;
+  const { email } = user;
   const currentType = this.getType(user, type);
-  return Info.statics.validatePassword(username, currentType, hash)
+  return Login.statics.validatePassword(email, currentType, hash)
     .then(({ access }) => {
       if (!access) {
         return user;
@@ -152,17 +135,17 @@ schema.statics.validatePassword = function validatePassword(user, type, hash, ip
     });
 };
 
-schema.statics.createUserOnApp = function createUserOnApp(email, username, type, ip, hash, app) {
-  return this.findOne({ 'info.mail': email })
+schema.statics.createUserOnApp = function createUserOnApp(email, type, ip, hash, app) {
+  return this.findOne({ email })
     .then((user) => (user
       ? this.addAppToUser(user, app, ip, type, hash)
       : this.create({
-        username,
-        info: Info.statics.infoFormat(email, type, hash, app, username, type !== password),
+        email,
+        login: Login.statics.loginFormat(email, type, hash, app, type !== password),
         ip_registered: [IP.statics.ipFormat(ip)],
       })
     ))
-    .then(({ username: un, hasType, addType }) => this.getUser(un, hasType, addType))
+    .then(({ email: mail, hasType, addType }) => this.getUser(mail, hasType, addType))
     .then((user) => this.validatePassword(user, type, hash, ip))
     .then((user) => {
       if (!user.AddType && user.hasType && !user.accessToken) {
@@ -175,34 +158,34 @@ schema.statics.createUserOnApp = function createUserOnApp(email, username, type,
     .then(this.userObject.bind(this));
 };
 
-schema.statics.signup = function signup(email, username, type, ip, hash, app) {
+schema.statics.signup = function signup(email, type, ip, hash, app) {
   return this.getEmail(email)
-    .then((user) => (user ? user.username : this.getUsername(username, type)))
-    .then((user) => this.createUserOnApp(email, user, type, ip, hash, app));
+    .then((user) => (user ? user.email : email))
+    .then((user) => this.createUserOnApp(user, type, ip, hash, app));
 };
 
-schema.statics.getUser = function getUser(username, hasType = false, addType = false) {
-  return this.findOne({ username })
+schema.statics.getUser = function getUser(email, hasType = false, addType = false) {
+  return this.getEmail(email)
     .then((user) => this.setHasType(user, hasType))
     .then((user) => this.setAddType(user, addType));
 };
 
 schema.statics.userObject = function userObject(user) {
   const {
-    username, accessToken = null, message = null, addType, hasType,
+    email, accessToken = null, message = null, addType, hasType,
   } = user;
 
   const hasToken = !!accessToken;
 
   const data = {
-    username,
+    email,
     is_new: !hasType && !addType,
     is_modify: addType,
     token: accessToken,
   };
 
   if (!hasToken) {
-    delete data.username;
+    delete data.email;
     data.message = this.Unauthorized;
   } else if (message) {
     data.message = message;
@@ -212,13 +195,13 @@ schema.statics.userObject = function userObject(user) {
 };
 
 schema.statics.addTypeOnSignIn = function addTypeOnSignIn(user, hash, app, type, ip) {
-  const { username } = user;
+  const { email } = user;
   return this.addType(user, hash, app, type, ip)
-    .then(() => this.getUser(username));
+    .then(() => this.getUser(email));
 };
 
-schema.statics.signin = function signin(identifier, type, hash, ip, app) {
-  return this.findOne({ status: true, $or: [{ username: identifier }, { 'info.mail': identifier }] })
+schema.statics.signin = function signin(email, type, hash, ip, app) {
+  return this.findOne({ status: true, email })
     .then((user) => {
       if (
         !!user
@@ -237,15 +220,14 @@ schema.statics.signin = function signin(identifier, type, hash, ip, app) {
 };
 
 schema.statics.userSession = function userSession(user, created, expiration, state = userState[0]) {
-  const { username, info } = user;
-  const { mail: email = 'nomail', type = [] } = info;
+  const { email = 'nomail', login } = user;
+  const { type = [] } = login;
   if (state !== userState[0]) {
-    return { username, state };
+    return { email, state };
   }
   return {
-    username,
-    state,
     email,
+    state,
     logins: type.filter(({ status }) => !!status).map(({ code }) => code),
     created,
     expiration,
@@ -255,9 +237,9 @@ schema.statics.userSession = function userSession(user, created, expiration, sta
 schema.statics.getDataToken = function getDataToken(token, ip) {
   return this.model('tokens').check(token, ip)
     .then(({
-      username, createdAt, expiredAt, type,
+      email, createdAt, expiredAt, type,
     }) => (
-      this.getUser(username).then(((user) => ({
+      this.getUser(email).then(((user) => ({
         user, createdAt, expiredAt, type,
       })))))
     .then(({
@@ -266,14 +248,14 @@ schema.statics.getDataToken = function getDataToken(token, ip) {
       if (
         !!user
         && user.state === enums.user_state_default
-        && Info.statics.isPasswordActive(this.getType(user, type), type)
+        && Login.statics.isPasswordActive(this.getType(user, type), type)
         && this.hasIp(user, ip)
       ) {
         return this.userSession(user, createdAt, expiredAt);
       } if (
         !!user
         && this.hasIp(user, ip)
-        && !Info.statics.isPasswordActive(this.getType(user, type), type)
+        && !Login.statics.isPasswordActive(this.getType(user, type), type)
       ) {
         return this.userSession(user, createdAt, expiredAt, userState[3]);
       } if (!!user && !this.hasIp(user, ip)) {
