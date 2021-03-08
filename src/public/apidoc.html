@@ -3,10 +3,18 @@
 <head>
   <meta charset="utf-8"> <!-- Important: rapi-doc uses utf8 charecters -->
   <script type="module" src="https://unpkg.com/rapidoc/dist/rapidoc-min.js"></script>
+  <title>Api user's doc</title>
 </head>
 <body>
   <rapi-doc 
-    spec-url="/apidoc" 
+    spec-url="/apidoc"
+    sort-endpoints-by="path"
+    heading-text="Api user's doc"
+    use-path-in-nav-bar="true"
+    show-info="true"
+    show-header="false" 
+    render-style="focused" 
+    allow-try="true" 
   > </rapi-doc>
 </body> 
 </html>
