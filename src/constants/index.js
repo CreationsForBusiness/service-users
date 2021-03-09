@@ -1,6 +1,5 @@
 const environments = require('./environments');
 const login = require('./login_types');
-const validator = require('./body_validator');
 
 const userActions = ['register', 'login'];
 const userStates = ['active', 'blocked', 'suspended', 'mail_unconfirmed', 'ip_unconfirmed']; // Reference for index on user.model
@@ -22,5 +21,4 @@ module.exports = {
     token_state: tokenStates,
     token_state_default: tokenStates[0],
   },
-  validator,
 };

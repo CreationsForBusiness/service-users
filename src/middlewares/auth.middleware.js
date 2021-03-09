@@ -15,6 +15,10 @@ module.exports = async (ctx, next) => {
     ctx.code = `${errorCode}-${errorID}`;
     ctx.throw(403, message);
   }
+  if (!(/^(?:[0-9]{1,3}\.){3}[0-9]{1,3}|::1$/.test(ip))) {
+    ctx.code = 'MAUT-1';
+    ctx.throw(403, 'Invalid IP');
+  }
   ctx.app_code = appCode;
   ctx.source_ip = ip;
   await next();

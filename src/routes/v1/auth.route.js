@@ -1,18 +1,8 @@
 const Router = require('koa-router');
 
-const { database_fixed_values: enums } = require('../../constants');
-
 const router = new Router();
 
 const errorCode = 'RAUT';
-
-const checkLoginType = (ctx, type) => {
-  if (!Object.values(enums.login_types).includes(type)) {
-    ctx.code = `${errorCode}-1`;
-    ctx.throw(400, 'Login type is invalid');
-  }
-  return type;
-};
 
 const buildResponse = (ctx, response) => {
   const {
@@ -50,9 +40,8 @@ router.post('/', async (ctx) => {
   const {
     email, type, hash,
   } = body;
-  const validType = checkLoginType(ctx, type);
   const { ...signup } = await users
-    .signup(email, validType, ip, hash, appCode);
+    .signup(email, type, ip, hash, appCode);
   const response = buildResponse(ctx, signup);
 
   ctx.body = response;
@@ -67,8 +56,7 @@ router.post('/session', async (ctx) => {
   const {
     email, type, hash,
   } = body;
-  const validType = checkLoginType(ctx, type);
-  const { ...signin } = await users.signin(email, validType, hash, ip, appCode);
+  const { ...signin } = await users.signin(email, type, hash, ip, appCode);
   const response = buildResponse(ctx, signin);
 
   ctx.body = response;
