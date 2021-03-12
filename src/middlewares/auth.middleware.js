@@ -7,15 +7,16 @@ module.exports = async (ctx, next) => {
   const appCode = ctx.get('app-code');
   const appId = ctx.get('app-id');
   const ip = ctx.get('request-ip');
+  const isValidRequest = validRequest.includes(url);
   const {
     valid, errorID, errorCode, message,
-  } = validRequest.includes(url) ? { valid: true } : await apps.validateApp(appCode, appId);
+  } = isValidRequest ? { valid: true } : await apps.validateApp(appCode, appId);
 
   if (!valid) {
     ctx.code = `${errorCode}-${errorID}`;
     ctx.throw(403, message);
   }
-  if (!(/^(?:[0-9]{1,3}\.){3}[0-9]{1,3}|::1$/.test(ip))) {
+  if (!isValidRequest && !(/^(?:[0-9]{1,3}\.){3}[0-9]{1,3}|::1$/.test(ip))) {
     ctx.code = 'MAUT-1';
     ctx.throw(403, 'Invalid IP');
   }
