@@ -24,7 +24,7 @@ Service for manage users by platform.
 1. Run migrations
 `npm run migrate` or `yarn migrate`
 1. Run project
-`npm run dev` or `yarn run dev`
+`npm run dev` or `yarn dev`
 
 * Migration will execute before start script.
 
