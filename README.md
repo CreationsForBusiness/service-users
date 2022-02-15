@@ -19,6 +19,12 @@ Service for manage users by platform.
 `cp .env.example .env`
 1. Replace environments variable
    * **PORT**: This port will be used by the app.
+   * **MONGO_HOST**: Host of the database server.
+   * **MONGO_PORT**: Port of database connection.
+   * **MONGO_DATABASE**: Name of the database.
+   * **MONGO_USER**: User for autentication on database.
+   * **MONGO_PASS**: Password for autentication on database.
+   * **MONGO_PREFIX**: Prefix for string connection to database.
 1. Install dependencies
 `npm install` or `yarn install`
 1. Run migrations
