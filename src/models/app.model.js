@@ -23,6 +23,10 @@ const schema = new Schema({
     index: true,
     unique: true,
   },
+  shared: {
+    type: Boolean,
+    required: true,
+  },
   status: {
     type: Boolean,
     required: true,
@@ -50,5 +54,10 @@ schema.statics.validateApp = function validateApp(code, uuid) {
     });
   }
 };
+
+schema.statics.isShared = function isShared(code) {
+  return this.findOne({ code })
+    .then(({ shared }) => (shared))
+} 
 
 module.exports = mongoose.model('apps', schema);

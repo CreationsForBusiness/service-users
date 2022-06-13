@@ -8,8 +8,8 @@ const vetaux = 'CFB_002';
  */
 async function up () {
   return Promise.all([
-    this('apps').create({ code: envelope, name: 'Envelopes', status: true, uuid: getRandomString() }),
-    this('apps').create({ code: vetaux, name: 'VetAux', status: true, uuid: getRandomString() }),
+    this('apps').create({ code: envelope, name: 'Envelopes', status: true, uuid: getRandomString(), shared: true, }),
+    this('apps').create({ code: vetaux, name: 'VetAux', status: true, uuid: getRandomString(), shared: false }),
   ]);
 }
 

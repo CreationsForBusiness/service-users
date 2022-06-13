@@ -37,18 +37,29 @@ const schema = new Schema({
     type: [IP],
     required: true,
   },
+  shared: {
+    type: Boolean,
+    required: true,
+    default: true,
+  }
 });
 
 schema.statics.Unauthorized = 'Invalid Credential';
 
-schema.statics.getEmail = function getEmail(email) {
-  return this.findOne({ email });
+// to review
+schema.statics.getEmail = function getEmail(email, shared = true) {
+  return this.findOne({ email, shared });
 };
 
-schema.statics.hasApp = ({ login = {} }, app) => !!login.app.find(({ code }) => code === app);
+schema.statics.getEmailByApp = function getEmailByApp(email, app) {
+  return this.findOne({ email, "login.app.code": app });
+};
+
+schema.statics.hasApp = ({ login = {} }, app) => !!login?.app?.find(({ code }) => code === app);
 
 schema.statics.getType = ({ login = {} }, type) => login.type.find(({ code }) => code === type);
 
+// to review
 schema.statics.hasType = function hasType({ login }, type) {
   return !!this.getType({ login }, type);
 };
@@ -60,14 +71,6 @@ schema.statics.setVal = (user, field, value = true) => {
   const data = user;
   data[field] = value;
   return data;
-};
-
-schema.statics.setHasType = function setHasType(user, value = true) {
-  return this.setVal(user, 'hasType', !!value);
-};
-
-schema.statics.setAddType = function setAddType(user, value = true) {
-  return this.setVal(user, 'addType', !!value);
 };
 
 schema.statics.setAccessToken = function setAccessToken(user, ip, type) {
@@ -86,7 +89,7 @@ schema.statics.setMessage = function setMessage(user, message) {
 };
 
 schema.statics.addType = function addPasswordType(user, hash, app, type, ip) {
-  const { email } = user;
+  const { email, shared } = user;
   const hasApp = this.hasApp(user, app);
   const hasIP = this.hasIp(user, ip);
   const data = {
@@ -98,29 +101,8 @@ schema.statics.addType = function addPasswordType(user, hash, app, type, ip) {
   if (!hasIP) {
     data.ip_registered = IP.statics.ipFormat(ip, type !== password);
   }
-  return this.updateOne({ email }, { $push: data }, { runValidators: true })
-    .then(({ n: modified }) => (modified === 0 ? this.setHasType(user) : user));
-};
-
-schema.statics.addAppToUser = function addAppToUser(user, app, ip, type, hash) {
-  const {
-    state, status,
-  } = user;
-
-  const hasType = this.hasType(user, type);
-
-  if (state !== enums.user_state_default) {
-    return Promise.reject(new Error(`The user is ${state}`));
-  } if (!status) {
-    return Promise.reject(new Error('The user was banned'));
-  } if ([google, facebook, password].includes(type) && hasType) {
-    return this.setHasType(user);
-  } if ([google, facebook, password].includes(type)) {
-    return this.addType(user, hash, app, type, ip)
-      .then((u) => this.setHasType(u, hasType))
-      .then((u) => this.setAddType(u));
-  }
-  return Promise.reject(new Error('Unknown login type'));
+  return this.updateOne({ email, shared }, { $push: data }, { runValidators: true })
+    .then(() => this.setVal(user, 'addType'))
 };
 
 schema.statics.validatePassword = function validatePassword(user, type, hash, ip) {
@@ -136,50 +118,53 @@ schema.statics.validatePassword = function validatePassword(user, type, hash, ip
 };
 
 schema.statics.createUserOnApp = function createUserOnApp(email, type, ip, hash, app) {
-  return this.findOne({ email })
-    .then((user) => (user
-      ? this.addAppToUser(user, app, ip, type, hash)
-      : this.create({
-        email,
-        login: Login.statics.loginFormat(email, type, hash, app, type !== password),
-        ip_registered: [IP.statics.ipFormat(ip)],
+  const login =  Login.statics.loginFormat(email, type, hash, app, type !== password);
+  const ipRegistered = [IP.statics.ipFormat(ip)];
+  const body = { email, login, ip_registered: ipRegistered };
+  return this.model('apps').isShared(app)
+    .then(shared => (this.getEmailByApp(email, app)
+      .then(user => {
+        if(!user && shared) {
+          return this.getEmail(email)
+            .then(user => (
+              user
+                ? this.addType(user, hash, app, type, ip)
+                : this.create(body)
+            ));
+        } else if (!user && !shared) {
+          return this.create({ ...body, shared: false });
+        } 
+        return user;
       })
-    ))
-    .then(({ email: mail, hasType, addType }) => this.getUser(mail, hasType, addType))
-    .then((user) => this.validatePassword(user, type, hash, ip))
-    .then((user) => {
-      if (!user.AddType && user.hasType && !user.accessToken) {
-        return this.setMessage(user, this.Unauthorized);
-      } if (user.addType && type === password) {
-        return this.setAccessToken(user, ip, type);
-      }
-      return user;
-    })
-    .then(this.userObject.bind(this));
+      .then((user) => this.validatePassword(user, type, hash, ip))
+      .then((user) => {
+        if(!user.accessToken) {
+          return this.setMessage(user, this.Unauthorized);
+        }
+        return user
+      })
+      .then(this.userObject.bind(this))));
+
 };
 
 schema.statics.signup = function signup(email, type, ip, hash, app) {
-  return this.getEmail(email)
-    .then((user) => (user ? user.email : email))
-    .then((user) => this.createUserOnApp(user, type, ip, hash, app));
+  return this.createUserOnApp(email, type, ip, hash, app);
 };
 
-schema.statics.getUser = function getUser(email, hasType = false, addType = false) {
+schema.statics.getUser = function getUser(email, app) {
   return this.getEmail(email)
-    .then((user) => this.setHasType(user, hasType))
-    .then((user) => this.setAddType(user, addType));
 };
 
 schema.statics.userObject = function userObject(user) {
   const {
-    email, accessToken = null, message = null, addType, hasType,
+    email, accessToken = null, message = null, addType = false,
   } = user;
 
   const hasToken = !!accessToken;
 
   const data = {
     email,
-    is_new: !hasType && !addType,
+    is_new: !addType,
     is_modify: addType,
     token: accessToken,
   };

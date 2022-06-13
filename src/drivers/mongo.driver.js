@@ -9,6 +9,7 @@ const {
 
 class MongoDatabase {
   constructor() {
+    console.log(debug)
     this.env = env;
     this.mongoose = mongoose;
     this.db = database;
@@ -25,6 +26,8 @@ class MongoDatabase {
       poolSize: 10,
       useUnifiedTopology: true,
       useFindAndModify: false,
+      logger: console.log,
+      loggerLevel: debug ? 'debug' : 'info',
     };
     if (user !== false && pass !== false) {
       this.dbOption.auth = { authSource: 'admin' };

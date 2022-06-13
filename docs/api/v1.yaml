@@ -61,7 +61,7 @@ info:
 
      
 servers:
-  - url: http://localhost:5000/api/v1
+  - url: http://users.creations.io:5001/api/v1
     description: Local for testing
   - url: https://sandbox.users.creations.com/api/v1
     description: Sandox for testing
