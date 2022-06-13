@@ -51,8 +51,12 @@ schema.statics.getEmail = function getEmail(email, shared = true) {
   return this.findOne({ email, shared });
 };
 
-schema.statics.getEmailByApp = function getEmailByApp(email, app) {
-  return this.findOne({ email, "login.app.code": app });
+schema.statics.getEmailByApp = function getEmailByApp(email, app, status = null) {
+  const query = { email, "login.app.code": app }
+  if(status !== null) {
+    query.status = status
+  }
+  return this.findOne(query);
 };
 
 schema.statics.hasApp = ({ login = {} }, app) => !!login?.app?.find(({ code }) => code === app);
@@ -182,22 +186,29 @@ schema.statics.userObject = function userObject(user) {
 schema.statics.addTypeOnSignIn = function addTypeOnSignIn(user, hash, app, type, ip) {
   const { email } = user;
   return this.addType(user, hash, app, type, ip)
-    .then(() => this.getUser(email));
+    .then(() => this.getEmailByApp(email, app));
 };
 
 schema.statics.signin = function signin(email, type, hash, ip, app) {
-  return this.findOne({ status: true, email })
+  return this.model('apps').isShared(app)
+    .then(shared => (
+      this.getEmailByApp(email, app, true)
+        .then(user => {
+          if(!user && shared) {
+            return this.getEmail(email)
+              .then(user => (
+                user
+                  ? this.addTypeOnSignIn(user, hash, app, type, ip)
+                  : user
+              ))
+          } 
+          return user;
+        })
+    ))
     .then((user) => {
-      if (
-        !!user
-        && this.hasApp(user, app)
-        && this.hasType(user, type)
-      ) {
-        return user;
-      } if (!!user && !this.hasType(user, type)) {
-        return this.addTypeOnSignIn(user, hash, app, type, ip);
-      }
-      throw new Error(this.Unauthorized);
+      if(user)
+        return user
+        throw new Error(this.Unauthorized);
     })
     .then((user) => this.validatePassword(user, type, hash, ip))
     .then(this.userObject.bind(this))
