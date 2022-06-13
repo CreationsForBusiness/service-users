@@ -16,7 +16,10 @@ module.exports = async (ctx, next) => {
     ctx.code = `${errorCode}-${errorID}`;
     ctx.throw(403, message);
   }
-  if (!isValidRequest && !(/^(?:[0-9]{1,3}\.){3}[0-9]{1,3}|::1$/.test(ip))) {
+
+  console.log(url, ip);
+
+  if (!isValidRequest && !(/^(?:[0-9]{1,3}\.){3}[0-9]{1,3}|::1|::ffff:127.0.0.1$/.test(ip))) {
     ctx.code = 'MAUT-1';
     ctx.throw(403, 'Invalid IP');
   }
