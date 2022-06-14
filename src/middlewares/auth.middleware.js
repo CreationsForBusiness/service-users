@@ -6,7 +6,7 @@ module.exports = async (ctx, next) => {
   const { apps } = models;
   const appCode = ctx.get('app-code');
   const appId = ctx.get('app-id');
-  const ip = str.replace('::ffff:', ctx.get('request-ip'));
+  const ip = ctx.get('request-ip').replace('::ffff:', '');
   const isValidRequest = validRequest.includes(url);
   const {
     valid, errorID, errorCode, message,
