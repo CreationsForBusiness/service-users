@@ -80,7 +80,8 @@ schema.statics.passwordFormat = function passwordFormat(password, email, login, 
   const sha = this.getHash(password, login, email);
   const state = active
     ? defaultValue.password_state_default
-    : defaultValue.password_state_waiting;
+    : defaultValue.password_state_default;
+    //: defaultValue.password_state_waiting;
   return {
     sha, code, state,
   };

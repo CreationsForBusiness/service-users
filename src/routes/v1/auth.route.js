@@ -63,12 +63,14 @@ router.post('/session', async (ctx) => {
 });
 
 router.get('/session', async (ctx) => {
-  const { models, source_ip: ip } = ctx;
+  const { models, app_code:appCode, source_ip: ip } = ctx;
   const token = ctx.get('token');
+  const tenant = ctx.get('tenant');
+
   const { users } = models;
 
   const { err = false, error = false, data } = token
-    ? await users.getDataToken(token, ip)
+    ? await users.getDataToken(token, tenant, appCode, ip)
     : { error: new Error('Token is missing') };
 
   if (err) {

@@ -84,13 +84,13 @@ schema.statics.setVal = (user, field, value = true) => {
   return data;
 };
 
-schema.statics.setAccessToken = function setAccessToken(user, ip, type) {
+schema.statics.setAccessToken = function setAccessToken(user, app, shared, ip, type) {
   const { token_state: tokenState } = enums;
   const [active, pending] = tokenState;
   const hasIp = this.hasIp(user, ip);
-  const { email } = user;
+  const { email, tenant } = user;
   const state = hasIp ? active : pending;
-  const info = { email, type };
+  const info = { email, type, tenant, app, shared };
   return this.model('tokens').generate(state, ip, info)
     .then((token) => this.setVal(user, 'accessToken', token));
 };
@@ -104,7 +104,7 @@ schema.statics.addType = function addPasswordType(user, hash, tenant, app, type,
   const hasApp = this.hasApp(user, app);
   const hasIP = this.hasIp(user, ip);
   const data = {
-    'login.type': Login.statics.typeFormat(type, hash, email, type !== password),
+    'login.type': Login.statics.typeFormat(type, hash, email, type !== password || rtu),
   };
   if (!hasApp) {
     data['login.app'] = Login.statics.appFormat(app);
@@ -116,7 +116,7 @@ schema.statics.addType = function addPasswordType(user, hash, tenant, app, type,
     .then(() => this.setVal(user, 'addType'))
 };
 
-schema.statics.validatePassword = function validatePassword(user, type, hash, ip) {
+schema.statics.validatePassword = function validatePassword(user, app, type, hash, ip, shared) {
   const { email } = user;
   const currentType = this.getType(user, type);
   return Login.statics.validatePassword(email, currentType, hash)
@@ -124,7 +124,7 @@ schema.statics.validatePassword = function validatePassword(user, type, hash, ip
       if (!access) {
         return user;
       }
-      return this.setAccessToken(user, ip, type);
+      return this.setAccessToken(user, app, shared, ip, type);
     });
 };
 
@@ -147,7 +147,7 @@ schema.statics.createUserOnApp = function createUserOnApp(email, type, ip, hash,
         } 
         return user;
       })
-      .then((user) => this.validatePassword(user, type, hash, ip))
+      .then((user) => this.validatePassword(user, app, type, hash, ip, shared))
       .then((user) => {
         if(!user.accessToken) {
           return this.setMessage(user, this.Unauthorized);
@@ -160,10 +160,6 @@ schema.statics.createUserOnApp = function createUserOnApp(email, type, ip, hash,
 
 schema.statics.signup = function signup(email, type, ip, hash, tenant, app) {
   return this.createUserOnApp(email, type, ip, hash, tenant, app);
-};
-
-schema.statics.getUser = function getUser(email, app) {
-  return this.getEmail(email)
 };
 
 schema.statics.userObject = function userObject(user) {
@@ -193,7 +189,7 @@ schema.statics.userObject = function userObject(user) {
 schema.statics.addTypeOnSignIn = function addTypeOnSignIn(user, hash, tenant, app, type, ip) {
   const { email } = user;
   return this.addType(user, hash, tenant, app, type, ip)
-    .then(() => this.getEmailByApp(email, app));
+    .then(() => this.getEmailByApp(email, tenant, app));
 };
 
 schema.statics.signin = function signin(email, type, hash, ip, tenant, app) {
@@ -211,13 +207,13 @@ schema.statics.signin = function signin(email, type, hash, ip, tenant, app) {
           } 
           return user;
         })
-    ))
+    
     .then((user) => {
       if(user)
         return user
         throw new Error(this.Unauthorized);
     })
-    .then((user) => this.validatePassword(user, type, hash, ip))
+    .then((user) => this.validatePassword(user, app, type, hash, ip, shared))))
     .then(this.userObject.bind(this))
     .catch((err) => this.setMessage({}, err));
 };
@@ -237,14 +233,22 @@ schema.statics.userSession = function userSession(user, created, expiration, sta
   };
 };
 
-schema.statics.getDataToken = function getDataToken(token, ip) {
+schema.statics.getDataToken = function getDataToken(token, tenantName, appCode, ip) {
   return this.model('tokens').check(token, ip)
     .then(({
-      email, createdAt, expiredAt, type,
-    }) => (
-      this.getUser(email).then(((user) => ({
-        user, createdAt, expiredAt, type,
-      })))))
+      email, type, app, tenant, shared, code, createdAt, expiredAt
+    }) => {
+      if(tenant !== tenantName || (app !== appCode && !shared)) {
+        return this.model('tokens').invalidate(code)
+          .then(() => {
+            throw new Error('Invalid Token') 
+          });
+      }
+      return this.getEmailByApp(email, tenant, app)
+        .then((user) => ({
+          user, createdAt, expiredAt, type,
+        }))
+    })
     .then(({
       user, createdAt, expiredAt, type,
     }) => {

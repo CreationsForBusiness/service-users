@@ -44,7 +44,7 @@ schema.statics.getToken = function getToken(code) {
 };
 
 schema.statics.validateToken = function validateToken({
-  email, code, exp, iat, type,
+  email, code, app, tenant, shared, exp, iat, type,
 }, ip) {
   const now = parseInt(new Date().getTime() / 1000, 10);
   const expiredAt = parseInt(exp, 10);
@@ -54,13 +54,19 @@ schema.statics.validateToken = function validateToken({
   }
   return this.getToken(code)
     .then((token) => {
-      if (!!token && token.ip === ip && token.state === enums.token_state_default) {
+      if (
+        token?.ip === ip && 
+        token?.state === enums.token_state_default
+      ) {
         return {
-          email, type, createdAt, expiredAt,
+          email, type, app, tenant, shared, code, createdAt, expiredAt
         };
-      } if (!!token && token.ip === ip && token.state !== enums.token_state_default) {
+      } if (
+        token?.ip === ip && 
+        token?.state !== enums.token_state_default
+      ) {
         throw new Error('Ip not confirmed');
-      } else if (!!token && token.ip !== ip) {
+      } else if (token?.ip !== ip) {
         throw new Error('Token created from a different origin');
       }
       throw new Error('Token does not exist');
@@ -74,5 +80,9 @@ schema.statics.check = function check(token, ip) {
   }
   return this.validateToken(data, ip);
 };
+
+schema.statics.invalidate = function invalidate(code) {
+  return this.updateOne({ code }, { status: false });
+}
 
 module.exports = mongoose.model('tokens', schema);

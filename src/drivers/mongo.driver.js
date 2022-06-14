@@ -9,7 +9,6 @@ const {
 
 class MongoDatabase {
   constructor() {
-    console.log(debug)
     this.env = env;
     this.mongoose = mongoose;
     this.db = database;
