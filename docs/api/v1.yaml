@@ -189,6 +189,7 @@ components:
       schema:
         type: string
       required: true
+
     HeaderAppCode:
       in: header
       name: app-code
@@ -196,6 +197,7 @@ components:
       schema:
         type: string
       required: true
+
     HeaderAppId:
       in: header
       name: app-id
@@ -204,6 +206,7 @@ components:
         type: string
       format: uuid
       required: true
+
     HeaderToken:
       in: header
       name: token
@@ -211,15 +214,18 @@ components:
       schema:
         type: string
       required: true
+
     UserId:
       type: string
       description: Object Id
       required: true
+
     UserIdObject:
       type: object
       properties:
         user_id:
           $ref: "#/components/schemas/UserId" 
+
     UserEmail:
       type: object
       properties:
@@ -227,6 +233,15 @@ components:
           type: string
           description: User email
           required: true
+
+    UserTenant:
+      type: object
+      properties:
+        tenant: 
+          type: string
+          description: User tenant
+          required: true
+
     UserBase:
       type: object
       properties:
@@ -238,9 +253,11 @@ components:
           type: string
           description: Password encrypted or id_hash from google/facebook 
           required: true
+          
     UserForm:
       allOf:
         - $ref: "#/components/schemas/UserEmail" 
+        - $ref: "#/components/schemas/UserTenant"
         - $ref: "#/components/schemas/UserBase"
 
     UserLogin:
@@ -260,6 +277,7 @@ components:
         - $ref: "#/components/schemas/UserIdObject"
         - $ref: "#/components/schemas/UserForm" 
         - $ref: "#/components/schemas/UserObject" 
+
     UserInfo:
       type: object
       properties:
@@ -277,6 +295,7 @@ components:
         expiration: 
           type: integer
           description: Date of expiration of token
+
     UserToken:
       type: object
       properties:

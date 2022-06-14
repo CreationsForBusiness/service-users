@@ -38,10 +38,10 @@ router.post('/', async (ctx) => {
   const { users } = models;
   const { body } = request;
   const {
-    email, type, hash,
+    email, type, hash, tenant,
   } = body;
   const { ...signup } = await users
-    .signup(email, type, ip, hash, appCode);
+    .signup(email, type, ip, hash, tenant, appCode);
   const response = buildResponse(ctx, signup);
 
   ctx.body = response;
@@ -54,9 +54,9 @@ router.post('/session', async (ctx) => {
   const { users } = models;
   const { body } = request;
   const {
-    email, type, hash,
+    email, type, hash, tenant
   } = body;
-  const { ...signin } = await users.signin(email, type, hash, ip, appCode);
+  const { ...signin } = await users.signin(email, type, hash, ip, tenant, appCode);
   const response = buildResponse(ctx, signin);
 
   ctx.body = response;

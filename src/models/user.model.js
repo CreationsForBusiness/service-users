@@ -12,6 +12,8 @@ const { password, google, facebook } = loginTypes;
 const Login = require('./schemas/login.schema');
 const IP = require('./schemas/ip.schema');
 
+const tenantDefault = "default"
+
 const schema = new Schema({
   email: {
     type: String,
@@ -21,6 +23,16 @@ const schema = new Schema({
     type: Login,
     required: true,
     default: [],
+  },
+  shared: {
+    type: Boolean,
+    required: true,
+    default: true,
+  },
+  tenant: {
+    type: String,
+    required: true,
+    default: 'default'
   },
   status: {
     type: Boolean,
@@ -37,22 +49,17 @@ const schema = new Schema({
     type: [IP],
     required: true,
   },
-  shared: {
-    type: Boolean,
-    required: true,
-    default: true,
-  }
 });
 
 schema.statics.Unauthorized = 'Invalid Credential';
 
 // to review
-schema.statics.getEmail = function getEmail(email, shared = true) {
-  return this.findOne({ email, shared });
+schema.statics.getEmail = function getEmail(email, tenant, shared = true) {
+  return this.findOne({ email, tenant, shared });
 };
 
-schema.statics.getEmailByApp = function getEmailByApp(email, app, status = null) {
-  const query = { email, "login.app.code": app }
+schema.statics.getEmailByApp = function getEmailByApp(email, tenant, app, status = null) {
+  const query = { email, tenant: tenant || tenantDefault, "login.app.code": app }
   if(status !== null) {
     query.status = status
   }
@@ -92,7 +99,7 @@ schema.statics.setMessage = function setMessage(user, message) {
   return this.setVal(user, 'message', message);
 };
 
-schema.statics.addType = function addPasswordType(user, hash, app, type, ip) {
+schema.statics.addType = function addPasswordType(user, hash, tenant, app, type, ip) {
   const { email, shared } = user;
   const hasApp = this.hasApp(user, app);
   const hasIP = this.hasIp(user, ip);
@@ -105,7 +112,7 @@ schema.statics.addType = function addPasswordType(user, hash, app, type, ip) {
   if (!hasIP) {
     data.ip_registered = IP.statics.ipFormat(ip, type !== password);
   }
-  return this.updateOne({ email, shared }, { $push: data }, { runValidators: true })
+  return this.updateOne({ email, tenant, shared }, { $push: data }, { runValidators: true })
     .then(() => this.setVal(user, 'addType'))
 };
 
@@ -121,18 +128,18 @@ schema.statics.validatePassword = function validatePassword(user, type, hash, ip
     });
 };
 
-schema.statics.createUserOnApp = function createUserOnApp(email, type, ip, hash, app) {
+schema.statics.createUserOnApp = function createUserOnApp(email, type, ip, hash, tenant, app) {
   const login =  Login.statics.loginFormat(email, type, hash, app, type !== password);
   const ipRegistered = [IP.statics.ipFormat(ip)];
-  const body = { email, login, ip_registered: ipRegistered };
+  const body = { email, tenant, login, ip_registered: ipRegistered };
   return this.model('apps').isShared(app)
-    .then(shared => (this.getEmailByApp(email, app)
+    .then(shared => (this.getEmailByApp(email, tenant, app)
       .then(user => {
         if(!user && shared) {
-          return this.getEmail(email)
+          return this.getEmail(email, tenant)
             .then(user => (
               user
-                ? this.addType(user, hash, app, type, ip)
+                ? this.addType(user, hash, tenant, app, type, ip)
                 : this.create(body)
             ));
         } else if (!user && !shared) {
@@ -151,8 +158,8 @@ schema.statics.createUserOnApp = function createUserOnApp(email, type, ip, hash,
 
 };
 
-schema.statics.signup = function signup(email, type, ip, hash, app) {
-  return this.createUserOnApp(email, type, ip, hash, app);
+schema.statics.signup = function signup(email, type, ip, hash, tenant, app) {
+  return this.createUserOnApp(email, type, ip, hash, tenant, app);
 };
 
 schema.statics.getUser = function getUser(email, app) {
@@ -183,22 +190,22 @@ schema.statics.userObject = function userObject(user) {
   return data;
 };
 
-schema.statics.addTypeOnSignIn = function addTypeOnSignIn(user, hash, app, type, ip) {
+schema.statics.addTypeOnSignIn = function addTypeOnSignIn(user, hash, tenant, app, type, ip) {
   const { email } = user;
-  return this.addType(user, hash, app, type, ip)
+  return this.addType(user, hash, tenant, app, type, ip)
     .then(() => this.getEmailByApp(email, app));
 };
 
-schema.statics.signin = function signin(email, type, hash, ip, app) {
+schema.statics.signin = function signin(email, type, hash, ip, tenant, app) {
   return this.model('apps').isShared(app)
     .then(shared => (
-      this.getEmailByApp(email, app, true)
+      this.getEmailByApp(email, tenant, app, true)
         .then(user => {
           if(!user && shared) {
-            return this.getEmail(email)
+            return this.getEmail(email, tenant)
               .then(user => (
                 user
-                  ? this.addTypeOnSignIn(user, hash, app, type, ip)
+                  ? this.addTypeOnSignIn(user, hash, tenant, app, type, ip)
                   : user
               ))
           } 
