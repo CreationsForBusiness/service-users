@@ -105,13 +105,13 @@ schema.statics.addType = function addPasswordType(user, hash, tenant, app, type,
   const hasApp = this.hasApp(user, app);
   const hasIP = this.hasIp(user, ip);
   const data = {
-    'login.type': Login.statics.typeFormat(type, hash, email, type !== password || rtu),
+    'login.type': Login.statics.typeFormat(type, hash, email, type !== password || true),
   };
   if (!hasApp) {
     data['login.app'] = Login.statics.appFormat(app);
   }
   if (!hasIP) {
-    data.ip_registered = IP.statics.ipFormat(ip, type !== password);
+    data.ip_registered = IP.statics.ipFormat(ip, type !== password || true);
   }
   return this.updateOne({ email, tenant, shared }, { $push: data }, { runValidators: true })
     .then(() => this.setVal(user, 'addType'))
