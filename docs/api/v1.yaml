@@ -184,7 +184,7 @@ components:
   schemas:
     HeaderIpRequest:
       in: header
-      name: request-ip
+      name: client-ip
       description: Ip from request
       schema:
         type: string
