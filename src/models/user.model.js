@@ -265,9 +265,11 @@ schema.statics.getDataToken = function getDataToken(token, tenantName, appCode, 
         && this.hasIp(user, ip)
         && !Login.statics.isPasswordActive(this.getType(user, type), type)
       ) {
-        return this.userSession(user, createdAt, expiredAt, userState[3]);
+        // return this.userSession(user, createdAt, expiredAt, userState[3]);
+        return this.userSession(user, createdAt, expiredAt, user.state);
       } if (!!user && !this.hasIp(user, ip)) {
-        return this.userSession(user, createdAt, expiredAt, userState[4]);
+        // return this.userSession(user, createdAt, expiredAt, userState[4]);
+        return this.userSession(user, createdAt, expiredAt, user.state);
       } if (user) {
         return this.userSession(user, createdAt, expiredAt, user.state);
       }
