@@ -89,7 +89,8 @@ schema.statics.setAccessToken = function setAccessToken(user, app, shared, ip, t
   const [active, pending] = tokenState;
   const hasIp = this.hasIp(user, ip);
   const { email, tenant } = user;
-  const state = hasIp ? active : pending;
+  // const state = hasIp ? active : pending;
+  const state = active;
   const info = { email, type, tenant, app, shared };
   return this.model('tokens').generate(state, ip, info)
     .then((token) => this.setVal(user, 'accessToken', token));
