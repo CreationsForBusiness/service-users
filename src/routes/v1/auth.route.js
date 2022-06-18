@@ -70,7 +70,7 @@ router.get('/session', async (ctx) => {
   const { users } = models;
 
   const { err = false, error = false, data } = token
-    ? await users.getDataToken(token, tenant, appCode, ip)
+    ? await users.getDataToken(token, tenant, appCode, ip).catch(err => ctx.throw(403, err))
     : { error: new Error('Token is missing') };
 
   if (err) {
@@ -83,6 +83,19 @@ router.get('/session', async (ctx) => {
   }
 
   ctx.body = data;
+});
+
+router.delete('/session', async (ctx) => {
+  const { models, source_ip: ip } = ctx;
+  const token = ctx.get('token');
+  const tenant = ctx.get('tenant');
+
+  const { tokens } = models;
+
+  const destroyed = await tokens.destroy(token, tenant, ip)
+    .catch(err => ctx.throw(403, err))
+
+  ctx.body = destroyed;
 });
 
 module.exports = router;

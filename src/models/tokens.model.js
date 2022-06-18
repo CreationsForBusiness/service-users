@@ -55,6 +55,7 @@ schema.statics.validateToken = function validateToken({
   return this.getToken(code)
     .then((token) => {
       if (
+        token &&
         token?.ip === ip && 
         token?.state === enums.token_state_default
       ) {
@@ -62,11 +63,12 @@ schema.statics.validateToken = function validateToken({
           email, type, app, tenant, shared, code, createdAt, expiredAt
         };
       } if (
+        token &&
         token?.ip === ip && 
         token?.state !== enums.token_state_default
       ) {
         throw new Error('Ip not confirmed');
-      } else if (token?.ip !== ip) {
+      } else if (token && token?.ip !== ip) {
         throw new Error('Token created from a different origin');
       }
       throw new Error('Token does not exist');
@@ -76,13 +78,33 @@ schema.statics.validateToken = function validateToken({
 schema.statics.check = function check(token, ip) {
   const { valid, data, err } = jwt.verify(token);
   if (!valid) {
+    return Promise.reject('Invalid Token');
+  }
+  if(err) {
     return Promise.reject(err);
   }
-  return this.validateToken(data, ip);
+  return this.validateToken(data, ip)
 };
 
+schema.statics.destroy = function destroy(token, name, ip) {
+  return this.check(token, ip)
+    .then(({ tenant,  code }) => {
+      if(tenant !== name) {
+        throw new Error('Token created form a different tenant') 
+      }
+      return code;
+    })
+    .then((code) => {
+      if(code === false) {
+        return true;
+      }
+      return this.invalidate(code);
+    })
+}
+
 schema.statics.invalidate = function invalidate(code) {
-  return this.updateOne({ code }, { status: false });
+  return this.updateOne({ code }, { status: false })
+    .then(({ nModified }) => nModified > 0);
 }
 
 module.exports = mongoose.model('tokens', schema);

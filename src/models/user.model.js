@@ -220,13 +220,14 @@ schema.statics.signin = function signin(email, type, hash, ip, tenant, app) {
 };
 
 schema.statics.userSession = function userSession(user, created, expiration, state = userState[0]) {
-  const { email = 'nomail', login } = user;
+  const { email = 'nomail', tenant = 'default', login } = user;
   const { type = [] } = login;
   if (state !== userState[0]) {
     return { email, state };
   }
   return {
     email,
+    tenant,
     state,
     logins: type.filter(({ status }) => !!status).map(({ code }) => code),
     created,
@@ -242,7 +243,7 @@ schema.statics.getDataToken = function getDataToken(token, tenantName, appCode, 
       if(tenant !== tenantName || (app !== appCode && !shared)) {
         return this.model('tokens').invalidate(code)
           .then(() => {
-            throw new Error('Invalid Token') 
+            throw new Error('Token data invalid') 
           });
       }
       return this.getEmailByApp(email, tenant, app)
