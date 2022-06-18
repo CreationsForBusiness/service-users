@@ -54,7 +54,6 @@ schema.statics.validateToken = function validateToken({
   }
   return this.getToken(code)
     .then((token) => {
-      console.log("=>==>", token, ip)
       if (
         token?.ip === ip && 
         token?.state === enums.token_state_default

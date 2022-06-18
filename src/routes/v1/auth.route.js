@@ -2,7 +2,7 @@ const Router = require('koa-router');
 
 const router = new Router();
 
-const errorCode = 'RAUT';
+const errorCode = 'URAU';
 
 const buildResponse = (ctx, response) => {
   const {
@@ -68,6 +68,9 @@ router.get('/session', async (ctx) => {
   const tenant = ctx.get('tenant');
 
   const { users } = models;
+
+  console.log("IP USER", ip);
+
 
   const { err = false, error = false, data } = token
     ? await users.getDataToken(token, tenant, appCode, ip)
