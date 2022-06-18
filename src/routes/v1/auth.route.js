@@ -69,9 +69,6 @@ router.get('/session', async (ctx) => {
 
   const { users } = models;
 
-  console.log("IP USER", ip);
-
-
   const { err = false, error = false, data } = token
     ? await users.getDataToken(token, tenant, appCode, ip)
     : { error: new Error('Token is missing') };
