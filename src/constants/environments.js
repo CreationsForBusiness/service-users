@@ -11,6 +11,8 @@ module.exports = {
     user: env.MONGO_USER,
     pass: env.MONGO_PASS,
     prefix: env.MONGO_PREFIX || 'mongodb',
+    poolsize: env.MONGO_POOL_SIZE || 10,
+    timeout: env.MONGO_TIMEOUT || 5000
   },
   jwt: {
     secret: env.JWT_SECRET || 'abc',
