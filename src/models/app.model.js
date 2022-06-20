@@ -60,4 +60,4 @@ schema.statics.isShared = function isShared(code) {
     .then(({ shared }) => (shared))
 } 
 
-module.exports = mongoose.model('apps', schema);
+module.exports = schema;

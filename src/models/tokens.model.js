@@ -107,4 +107,4 @@ schema.statics.invalidate = function invalidate(code) {
     .then(({ nModified }) => nModified > 0);
 }
 
-module.exports = mongoose.model('tokens', schema);
+module.exports = schema;

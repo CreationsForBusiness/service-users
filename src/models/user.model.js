@@ -280,4 +280,4 @@ schema.statics.getDataToken = function getDataToken(token, tenantName, appCode, 
     .catch((err) => ({ err }));
 };
 
-module.exports = mongoose.model('users', schema);
+module.exports = schema;

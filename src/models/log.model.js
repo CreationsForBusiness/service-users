@@ -29,4 +29,4 @@ const schema = new Schema({
   },
 });
 
-module.exports = mongoose.model('access', schema);
+module.exports = schema;

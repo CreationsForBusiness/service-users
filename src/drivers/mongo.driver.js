@@ -1,30 +1,33 @@
+/* eslint-disable global-require */
+/* eslint-disable import/no-dynamic-require */
+
+const fs = require('fs');
+const path = require('path');
 const mongoose = require('mongoose');
+
 const { environments } = require('../constants');
-
 const { env, mongo, debug } = environments;
-
 const {
-  host, port, database, user = false, pass = false, prefix,
+  host, port, database, user = false, pass = false, prefix, poolsize, timeout
 } = mongo;
 
 class MongoDatabase {
-  constructor() {
+  constructor(modelDirectory, tenant) {
+    this.modelDirectory = modelDirectory
     this.env = env;
-    this.mongoose = mongoose;
     this.db = database;
     this.port = !!port && Number.isInteger(parseInt(port, 10)) ? `:${port}` : '';
     this.dbURI = `${prefix}://${host}${this.port}/${this.db}`;
-    this.reconnectInterval = 1500;
-    this.mongoose.set('debug', debug);
-    this.mongoose.Promise = global.Promise;
     this.instance = false;
-    this.retry = 0;
+
     this.dbOption = {
       useNewUrlParser: true,
-      useCreateIndex: true,
-      poolSize: 10,
       useUnifiedTopology: true,
       useFindAndModify: false,
+      useCreateIndex: true,
+      autoIndex: true,
+      poolSize: poolsize,
+      serverSelectionTimeoutMS: timeout,
       logger: console.log,
       loggerLevel: debug ? 'debug' : 'info',
     };
@@ -33,43 +36,64 @@ class MongoDatabase {
       this.dbOption.user = user;
       this.dbOption.pass = pass;
     }
-    this.events(this);
+    this.connect();
+
   }
 
-  events() {
-    this.mongoose.connection.on('error', (err) => {
-      console.log('MONGO 1', new Error(`Error connecting ${this.retry} to MongoDb @ ${this.dbURI}: ${err.message}`));
-      this.mongoose.disconnect();
+  setNotifications(connection) {
+    connection.on('error', (err) => {
+      console.error(`Error connecting to MongoDb @ ${this.dbURI}: ${err.message}`)
     });
-    this.mongoose.connection.on('connecting', () => {
+    connection.on('connecting', () => {
       console.log(`Connecting to MongoDB @ ${this.dbURI}`);
     });
-    this.mongoose.connection.on('connected', () => {
+    connection.on('connected', () => {
       console.log(`Successfully connected to MongoDB @ ${this.dbURI} `);
-      this.instance = true;
     });
-    this.mongoose.connection.on('reconnected', () => {
+    connection.on('reconnected', () => {
       console.log(`Reconnected to MongoDB @ ${this.dbURI}`);
     });
-    this.mongoose.connection.on('disconnected', () => {
+    connection.on('disconnecting', () => {
+      console.log(`Disconnecting from MongoDB @ ${this.dbURI}`);
+    });
+    connection.on('disconnected', () => {
       console.log(`Disconnected from MongoDB @ ${this.dbURI}`);
+    });
+    connection.on('close', () => {
+      console.log(`Client MongoDB closed @ ${this.dbURI}`);
+    });
+    connection.on('close', () => {
+      console.log(`Client MongoDB closed @ ${this.dbURI}`);
     });
   }
 
-  connect() {
-    if (this.instance === false) {
-      this.retry += 1;
-      this.mongoose.connect(this.dbURI, this.dbOption)
-        .catch((err) => {
-          console.log('MONGO 2', new Error(`Error on start mongo connection: ${err.message}`));
-          this.instance = false;
-          this.timeout = setTimeout(this.connect.bind(this), this.reconnectInterval);
-        });
-    } else {
-      console.log(`Already connected to MongoDB @ ${this.dbURI}`);
-    }
-    return true;
+  bindModels(directory) {
+    fs
+      .readdirSync(this.modelDirectory)
+      .filter((file) => (!['.', 'index.js', 'schemas', directory].includes(file)))
+      .forEach((file) => {
+        const [name] = file.split('.');
+        const model = `${name.charAt(0).toUpperCase()}${name.slice(1)}`;
+        const modelPath = path.join(this.modelDirectory, file);
+        const schema = require(modelPath);
+        this.instance.model(model, schema);
+      });
   }
+
+
+  connect () {
+    if (this.instance === false) {
+      this.instance = mongoose.createConnection(this.dbURI, this.dbOption)
+      this.instance.catch(err => {
+        console.error(new Error(`Error on start mongo connection: ${err.message}`));
+      });
+      this.bindModels(this.modelDirectory)
+      this.setNotifications(this.instance.client)
+    }
+    console.log(`Instance started @ ${this.dbURI}`);
+    return true
+  }
+
 }
 
-module.exports = new MongoDatabase();
+module.exports = MongoDatabase
