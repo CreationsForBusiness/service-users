@@ -1,4 +1,6 @@
-const Apps = require('../src/models/app.model');
+const mongoose = require('mongoose');
+
+const Apps = require('../src/models/apps.model');
 const { getRandomString } = require('../src/libs/commons.lib');
 const envelope = 'CFB_001';
 const vetaux = 'CFB_002';
@@ -8,8 +10,8 @@ const vetaux = 'CFB_002';
  */
 async function up () {
   return Promise.all([
-    this('apps').create({ code: envelope, name: 'Envelopes', status: true, uuid: getRandomString(), shared: true, }),
-    this('apps').create({ code: vetaux, name: 'VetAux', status: true, uuid: getRandomString(), shared: false }),
+    this('Apps').create({ code: envelope, name: 'Envelopes', status: true, uuid: getRandomString(), shared: true, }),
+    this('Apps').create({ code: vetaux, name: 'VetAux', status: true, uuid: getRandomString(), shared: false }),
   ]);
 }
 
@@ -18,8 +20,8 @@ async function up () {
  */
 async function down () {
   return Promise.all([
-    this('apps').deleteOne({ code: envelope }),
-    this('apps').deleteOne({ code: vetaux }),
+    this('Apps').deleteOne({ code: envelope }),
+    this('Apps').deleteOne({ code: vetaux }),
   ]);
 }
 

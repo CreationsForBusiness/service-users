@@ -3,14 +3,13 @@ const validRequest = ['/', '/favicon.ico', '/apidoc'];
 module.exports = async (ctx, next) => {
   const { models, request } = ctx;
   const { url } = request;
-  const { apps } = models;
   const appCode = ctx.get('app-code');
   const appId = ctx.get('app-id');
   const ip = ctx.get('client-ip').replace('::ffff:', '');
   const isValidRequest = validRequest.includes(url);
   const {
     valid, errorID, errorCode, message,
-  } = isValidRequest ? { valid: true } : await apps.validateApp(appCode, appId);
+  } = isValidRequest ? { valid: true } : await models.Apps.validateApp(appCode, appId);
 
   if (!valid) {
     ctx.code = `${errorCode}-${errorID}`;

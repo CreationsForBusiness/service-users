@@ -35,13 +35,11 @@ router.post('/', async (ctx) => {
   const {
     request, models, app_code: appCode, source_ip: ip,
   } = ctx;
-  const { users } = models;
   const { body } = request;
   const {
     email, type, hash, tenant,
   } = body;
-  const { ...signup } = await users
-    .signup(email, type, ip, hash, tenant, appCode);
+  const { ...signup } = await models.Users.signup(email, type, ip, hash, tenant, appCode);
   const response = buildResponse(ctx, signup);
 
   ctx.body = response;
@@ -51,12 +49,11 @@ router.post('/session', async (ctx) => {
   const {
     request, models, app_code: appCode, source_ip: ip,
   } = ctx;
-  const { users } = models;
   const { body } = request;
   const {
     email, type, hash, tenant
   } = body;
-  const { ...signin } = await users.signin(email, type, hash, ip, tenant, appCode);
+  const { ...signin } = await models.Users.signin(email, type, hash, ip, tenant, appCode);
   const response = buildResponse(ctx, signin);
 
   ctx.body = response;
@@ -67,10 +64,8 @@ router.get('/session', async (ctx) => {
   const token = ctx.get('token');
   const tenant = ctx.get('tenant');
 
-  const { users } = models;
-
   const { err = false, error = false, data } = token
-    ? await users.getDataToken(token, tenant, appCode, ip).catch(err => ctx.throw(403, err))
+    ? await models.Users.getDataToken(token, tenant, appCode, ip).catch(err => ctx.throw(403, err))
     : { error: new Error('Token is missing') };
 
   if (err) {
@@ -90,9 +85,7 @@ router.delete('/session', async (ctx) => {
   const token = ctx.get('token');
   const tenant = ctx.get('tenant');
 
-  const { tokens } = models;
-
-  const destroyed = await tokens.destroy(token, tenant, ip)
+  const destroyed = await models.Tokens.destroy(token, tenant, ip)
     .catch(err => ctx.throw(403, err))
 
   ctx.body = destroyed;

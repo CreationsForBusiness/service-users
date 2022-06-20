@@ -92,7 +92,7 @@ schema.statics.setAccessToken = function setAccessToken(user, app, shared, ip, t
   // const state = hasIp ? active : pending;
   const state = active;
   const info = { email, type, tenant, app, shared };
-  return this.model('tokens').generate(state, ip, info)
+  return this.model('Tokens').generate(state, ip, info)
     .then((token) => this.setVal(user, 'accessToken', token));
 };
 
@@ -133,7 +133,7 @@ schema.statics.createUserOnApp = function createUserOnApp(email, type, ip, hash,
   const login =  Login.statics.loginFormat(email, type, hash, app, type !== password);
   const ipRegistered = [IP.statics.ipFormat(ip)];
   const body = { email, tenant, login, ip_registered: ipRegistered };
-  return this.model('apps').isShared(app)
+  return this.model('Apps').isShared(app)
     .then(shared => (this.getEmailByApp(email, tenant, app)
       .then(user => {
         if(!user && shared) {
@@ -194,7 +194,7 @@ schema.statics.addTypeOnSignIn = function addTypeOnSignIn(user, hash, tenant, ap
 };
 
 schema.statics.signin = function signin(email, type, hash, ip, tenant, app) {
-  return this.model('apps').isShared(app)
+  return this.model('Apps').isShared(app)
     .then(shared => (
       this.getEmailByApp(email, tenant, app, true)
         .then(user => {
@@ -236,12 +236,12 @@ schema.statics.userSession = function userSession(user, created, expiration, sta
 };
 
 schema.statics.getDataToken = function getDataToken(token, tenantName, appCode, ip) {
-  return this.model('tokens').check(token, ip)
+  return this.model('Tokens').check(token, ip)
     .then(({
       email, type, app, tenant, shared, code, createdAt, expiredAt
     }) => {
       if(tenant !== tenantName || (app !== appCode && !shared)) {
-        return this.model('tokens').invalidate(code)
+        return this.model('Tokens').invalidate(code)
           .then(() => {
             throw new Error('Token data invalid') 
           });
