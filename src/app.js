@@ -43,7 +43,7 @@ app.use(async (ctx, next) => {
   ctx.app_name = name;
   ctx.version = version;
   ctx.env = app.env;
-  ctx.models = models.mongoose.models;
+  ctx.models = models.instance.models;
   await next();
 });
 
