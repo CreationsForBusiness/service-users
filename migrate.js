@@ -13,3 +13,4 @@ module.exports = {
   dbConnectionUri,
   'migrations-dir': './migrations',
 };
+
