@@ -33,21 +33,25 @@ const schema = new Schema({
 
 schema.statics.loginFormat = function loginFormat(email, type, hash, app, passwordActive) {
   return {
-    type: this.typeFormat(type, hash, email, passwordActive),
+    type: this.typeFormat(email, type, hash, passwordActive),
     app: this.appFormat(app),
   };
 };
 
-schema.statics.typeFormat = (type, hash, email, passwordActive) => (
-  Type.statics.typeFormat(type, hash, email, passwordActive)
+schema.statics.typeFormat = (email, type, hash, passwordActive) => (
+  Type.statics.typeFormat(email, type, hash, passwordActive)
 );
 
 schema.statics.appFormat = (app) => App.statics.appFormat(app);
+
+schema.statics.passwordFormat = (email, login, hash, passwordActive, type) => (
+  Type.statics.passwordFormat(email, login, hash, passwordActive, type)
+)
 
 schema.statics.validatePassword = (email, type, hash) => (
   Type.statics.validatePassword(email, type, hash)
 );
 
-schema.statics.isPasswordActive = (types, type) => Type.statics.isPasswordActive(types, type);
+schema.statics.isPasswordActive = (type) => Type.statics.isPasswordActive(type);
 
 module.exports = schema;

@@ -1,7 +1,7 @@
 const environments = require('./environments');
 const login = require('./login_types');
 
-const userActions = ['register', 'login'];
+const userActions = ['register', 'login', 'change password'];
 const userStates = ['active', 'blocked', 'suspended', 'mail_unconfirmed', 'ip_unconfirmed']; // Reference for index on user.model
 const passwordStates = ['active', 'waiting'];
 const tokenStates = ['active', 'pending'];
@@ -14,6 +14,7 @@ module.exports = {
     user_actions: userActions,
     user_register: userActions[0],
     user_login: userActions[1],
+    user_change_password: userActions[2],
     login_types: login,
     password_state: passwordStates,
     password_state_default: passwordStates[0],

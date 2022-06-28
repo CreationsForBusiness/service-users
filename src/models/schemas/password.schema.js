@@ -58,8 +58,8 @@ schema.statics.validateHash = function validateHash(sha, type, email, hash) {
   return bcrypt.compareSync(plain, hash);
 };
 
-schema.statics.isPasswordActive = function isPasswordActive(types, type) {
-  const { state } = this.getPassword(types, type);
+schema.statics.isPasswordActive = function isPasswordActive(type) {
+  const { state } = this.getPassword(type);
   return state === defaultValue.password_state_default;
 };
 
@@ -75,7 +75,7 @@ schema.statics.validatePassword = function validatePassword(email, type, string)
   return Promise.resolve({ access: this.validateHash(string, code, email, sha) });
 };
 
-schema.statics.passwordFormat = function passwordFormat(password, email, login, active) {
+schema.statics.passwordFormat = function passwordFormat(email, login, password, active, type = defaultValue.user_register) {
   const code = getRandomString();
   const sha = this.getHash(password, login, email);
   const state = active
@@ -83,7 +83,7 @@ schema.statics.passwordFormat = function passwordFormat(password, email, login, 
     : defaultValue.password_state_default;
     //: defaultValue.password_state_waiting;
   return {
-    sha, code, state,
+    sha, code, state, type
   };
 };
 

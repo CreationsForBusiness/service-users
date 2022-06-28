@@ -105,7 +105,7 @@ schema.statics.addType = function addPasswordType(user, hash, tenant, app, type,
   const hasApp = this.hasApp(user, app);
   const hasIP = this.hasIp(user, ip);
   const data = {
-    'login.type': Login.statics.typeFormat(type, hash, email, type !== password || true),
+    'login.type': Login.statics.typeFormat(email, type, hash, type !== password || true),
   };
   if (!hasApp) {
     data['login.app'] = Login.statics.appFormat(app);
@@ -257,14 +257,14 @@ schema.statics.getDataToken = function getDataToken(token, tenantName, appCode, 
       if (
         !!user
         && user.state === enums.user_state_default
-        && Login.statics.isPasswordActive(this.getType(user, type), type)
+        && Login.statics.isPasswordActive(this.getType(user, type))
         && this.hasIp(user, ip)
       ) {
         return this.userSession(user, createdAt, expiredAt);
       } if (
         !!user
         && this.hasIp(user, ip)
-        && !Login.statics.isPasswordActive(this.getType(user, type), type)
+        && !Login.statics.isPasswordActive(this.getType(user, type))
       ) {
         // return this.userSession(user, createdAt, expiredAt, userState[3]);
         return this.userSession(user, createdAt, expiredAt, user.state);
@@ -279,5 +279,40 @@ schema.statics.getDataToken = function getDataToken(token, tenantName, appCode, 
     .then((data) => ({ data }))
     .catch((err) => ({ err }));
 };
+
+schema.statics.changePassword = function changePassword(email, tenant, login, hash) {
+  const newPass =  Login.statics.passwordFormat(email, login, hash, true, enums.user_change_password);
+  const query = { email, tenant };
+  //https://www.mongodb.com/community/forums/t/push-into-array-while-seting-fields-of-existing-elements/16527/4
+  const push = {
+    $push: { "login.type.$[t].password": newPass },
+  }
+  const filtersPush = {
+    arrayFilters: [ { "t.code": login } ]
+  }
+  return this.updateOne(query, push, filtersPush)
+    .then(({ nModified }) => {
+      if (nModified === 1) {
+        return true
+      }
+      throw new Error('Password not added')
+    })
+    .then(() => {
+      const set = {
+        $set: { "login.type.$[t].password.$[p].status": false },
+      }
+      const filtersSet = {
+        arrayFilters: [ { "t.code": login }, { "p.code": { $ne: newPass.code } } ]
+      }
+      return this.updateOne(query, set, filtersSet)
+    })
+    .then(({ nModified }) => {
+      if (nModified === 1) {
+        return true
+      }
+      throw new Error('Passwords not updated')
+    });
+  
+}
 
 module.exports = schema;

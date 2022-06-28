@@ -33,15 +33,19 @@ const schema = new Schema({
   },
 });
 
-schema.statics.typeFormat = (code, sha, email, passwordActive) => ({
+schema.statics.typeFormat = (email, code, sha, passwordActive) => ({
   code,
-  password: [Password.statics.passwordFormat(sha, email, code, passwordActive)],
+  password: [Password.statics.passwordFormat(email, code, sha, passwordActive)],
 });
+
+schema.statics.passwordFormat = (email, login, hash, passwordActive, type) => (
+  Password.statics.passwordFormat(email, login, hash, passwordActive, type)
+)
 
 schema.statics.validatePassword = (email, type, hash) => (
   Password.statics.validatePassword(email, type, hash)
 );
 
-schema.statics.isPasswordActive = (type, code) => Password.statics.isPasswordActive(type, code);
+schema.statics.isPasswordActive = (type) => Password.statics.isPasswordActive(type);
 
 module.exports = schema;
